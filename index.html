@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluid Silk Card - 1:1 Exact Match</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background:
+        radial-gradient(900px 620px at 16% 10%, rgba(255, 255, 255, 0.55), transparent 60%),
+        radial-gradient(1000px 700px at 86% 92%, rgba(222, 226, 233, 0.5), transparent 62%),
+        #f3f3f1;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
+      overflow: hidden;
+    }
+
+    .container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 140px;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 46px;
+      z-index: 10;
+    }
+    .slot-left, .slot-right { min-width: 150px; }
+
+    .col-label {
+      font-size: 10px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: rgba(120, 116, 108, 0.6);
+      margin-bottom: 4px;
+    }
+    .column.slot-right .col-label { text-align: right; }
+
+    .option {
+      font-size: 19px;
+      letter-spacing: -0.015em;
+      color: #b8b4ac;
+      cursor: pointer;
+      font-weight: 400;
+      transition: color 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      position: relative;
+      outline: none;
+    }
+
+    .column.slot-left .option:hover { transform: translateX(4px); }
+    .column.slot-right .option:hover { transform: translateX(-4px); }
+    .option:focus-visible { color: #78746c; }
+    .option:hover { color: #78746c; }
+
+    .option.active {
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .option::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -9px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease;
+    }
+    .option.active::after { opacity: 0.5; transform: scaleX(1); }
+
+    /* Style 分类：色彩选择器行 + 可滚动色板列表 (屏幕始终只露出 4 项) */
+    .theme-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 46px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+      padding-right: 4px;
+      margin-right: -4px;
+    }
+    .theme-scroll::-webkit-scrollbar { width: 4px; }
+    .theme-scroll::-webkit-scrollbar-track { background: transparent; }
+    .theme-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 2px; }
+
+    .option-picker {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 9px;
+    }
+    .picker-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.65);
+      background: #c9c2b4;
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .option-picker:hover .picker-swatch,
+    .option-picker.active .picker-swatch { transform: scale(1.15); }
+    .option-picker input[type="color"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .card-zone {
+      position: relative;
+      z-index: 10;
+    }
+
+    .glow {
+      position: absolute;
+      inset: -60px;
+      border-radius: 50%;
+      background: rgba(198, 215, 235, 0.6);
+      filter: blur(70px);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .card-box {
+      position: relative;
+      z-index: 1;
+      width: 256px;
+      height: 256px;
+      border-radius: 46px;
+      overflow: hidden;
+      --shadow-tint: 104, 134, 169;
+      box-shadow:
+        0 36px 70px -15px rgba(var(--shadow-tint), 0.18),
+        0 14px 28px -10px rgba(var(--shadow-tint), 0.10);
+      background: #8faecf;
+    }
+    .card-box::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+    }
+
+    #webgl-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 四角拖拽手柄：贴着卡片圆角外侧的一道弧线，悬停/拖拽时才显形，四角都能拉 */
+    .resize-handle {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border: 2px solid transparent;
+      border-radius: 13px;
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.2s ease;
+      z-index: 2;
+      touch-action: none;
+    }
+    .card-zone:hover .resize-handle,
+    .resize-handle:focus-visible,
+    .resize-handle.dragging { opacity: 1; }
+    .resize-handle:hover, .resize-handle.dragging { transform: scale(1.12); }
+
+    .resize-handle[data-corner="tl"] {
+      left: -11px; top: -11px;
+      border-top-color: #7c8a9c; border-left-color: #7c8a9c;
+      border-top-left-radius: 13px;
+      cursor: nwse-resize;
+      transform-origin: top left;
+    }
+    .resize-handle[data-corner="tr"] {
+      right: -11px; top: -11px;
+      border-top-color: #7c8a9c; border-right-color: #7c8a9c;
+      border-top-right-radius: 13px;
+      cursor: nesw-resize;
+      transform-origin: top right;
+    }
+    .resize-handle[data-corner="bl"] {
+      left: -11px; bottom: -11px;
+      border-bottom-color: #7c8a9c; border-left-color: #7c8a9c;
+      border-bottom-left-radius: 13px;
+      cursor: nesw-resize;
+      transform-origin: bottom left;
+    }
+    .resize-handle[data-corner="br"] {
+      right: -11px; bottom: -11px;
+      border-bottom-color: #7c8a9c; border-right-color: #7c8a9c;
+      border-bottom-right-radius: 13px;
+      cursor: nwse-resize;
+      transform-origin: bottom right;
+    }
+
+    #connector-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      overflow: visible;
+    }
+
+    .dash-line {
+      fill: none;
+      stroke: #c4c0b6;
+      stroke-width: 1.25;
+      stroke-dasharray: 4.5 4.5;
+      stroke-linecap: round;
+      animation: dash-flow 1.5s linear infinite;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    @keyframes dash-flow { to { stroke-dashoffset: -9; } }
+
+    .line-dot {
+      fill: #98a4b4;
+      opacity: 0;
+      transition: fill 0.4s ease, opacity 0.35s ease;
+    }
+
+    /* 右侧导出：文字 + 下划线，无卡片背景，纵向与卡片居中对齐 */
+    .export-panel {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 40px;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .export-panel > * { pointer-events: auto; }
+    .export-panel .col-label { text-align: right; margin-bottom: 0; }
+    .export-item {
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      color: #b8b4ac;
+      cursor: pointer;
+      position: relative;
+      outline: none;
+      transition: color 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .export-item:hover, .export-item:focus-visible { color: #78746c; transform: translateX(-3px); }
+    .export-item::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -5px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+    }
+    .export-item:hover::after, .export-item:focus-visible::after { opacity: 0.45; transform: scaleX(1); }
+
+    /* 左侧：category 导航，与 Export 面板镜像对称，纵向与卡片居中对齐 */
+    .category-panel {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 40px;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .category-panel > * { pointer-events: auto; }
+    .category-item {
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      color: #b8b4ac;
+      cursor: pointer;
+      position: relative;
+      outline: none;
+      transition: color 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .category-item:hover, .category-item:focus-visible { color: #78746c; transform: translateX(3px); }
+    .category-item::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -5px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+    }
+    .category-item:hover::after, .category-item:focus-visible::after { opacity: 0.45; transform: scaleX(1); }
+    .category-item.active { color: #1a1a1a; font-weight: 500; }
+    .category-item.active::after { opacity: 0.5; transform: scaleX(1); }
+
+    /* 停靠区：未展开的分类面板待在这里，不参与布局 */
+    #categoryPanels[hidden] { display: none; }
+    .category-content { display: contents; }
+
+    @media (max-width: 760px) {
+      body { overflow: auto; }
+      .container {
+        flex-direction: column;
+        gap: 36px;
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        padding: 90px 20px 40px;
+      }
+      .column { flex-direction: row; gap: 30px; }
+      .slot-left, .slot-right { min-width: 0; }
+      .theme-scroll { flex-direction: row; max-height: none !important; overflow-x: auto; overflow-y: hidden; padding-right: 0; }
+      .card-box { width: min(256px, 62vw); height: auto; aspect-ratio: 1; }
+      #connector-svg { display: none; }
+      .resize-handle { display: none; }
+      .category-panel { top: 20px; bottom: auto; left: 24px; justify-content: flex-start; }
+      .export-panel { top: 20px; bottom: auto; right: 24px; justify-content: flex-start; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dash-line { animation: none; }
+      .option { transition: color 0.35s ease; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <svg id="connector-svg">
+      <path id="line-left" class="dash-line"></path>
+      <path id="line-right" class="dash-line"></path>
+      <circle id="dot-textL" class="line-dot" r="2.5"></circle>
+      <circle id="dot-cardL" class="line-dot" r="3.5"></circle>
+      <circle id="dot-cardR" class="line-dot" r="3.5"></circle>
+      <circle id="dot-textR" class="line-dot" r="2.5"></circle>
+    </svg>
+
+    <!-- 左槽位：展开的分类面板落在这里 -->
+    <div class="column slot-left" id="slotLeft" role="group"></div>
+
+    <!-- 中心流体卡片 -->
+    <div class="card-zone">
+      <div class="glow" id="glow"></div>
+      <div class="card-box" id="card">
+        <canvas id="webgl-canvas"></canvas>
+      </div>
+      <div class="resize-handle" data-corner="tl" role="slider" aria-label="Resize card" tabindex="0"></div>
+      <div class="resize-handle" data-corner="tr" role="slider" aria-label="Resize card" tabindex="0"></div>
+      <div class="resize-handle" data-corner="bl" role="slider" aria-label="Resize card" tabindex="0"></div>
+      <div class="resize-handle" data-corner="br" role="slider" aria-label="Resize card" tabindex="0"></div>
+    </div>
+
+    <!-- 右槽位：展开的分类面板落在这里 -->
+    <div class="column slot-right" id="slotRight" role="group"></div>
+  </div>
+
+  <!-- 左上角：category 导航 -->
+  <div class="category-panel" id="categoryPanel">
+    <div class="category-item" role="button" tabindex="0" data-cat="motion">Motion</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="style">Style</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="speed">Speed</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="ratio">Ratio</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="size">Size</div>
+  </div>
+
+  <!-- 右上角：导出 -->
+  <div class="export-panel" id="exportPanel">
+    <div class="col-label">Export</div>
+    <div class="export-item" role="button" tabindex="0" data-export="png">PNG</div>
+    <div class="export-item" role="button" tabindex="0" data-export="html">HTML</div>
+    <div class="export-item" role="button" tabindex="0" data-export="react">React</div>
+    <div class="export-item" role="button" tabindex="0" data-export="json">JSON</div>
+  </div>
+
+  <!-- 停靠区：4 个分类面板，未展开时都待在这里，从不重建 DOM -->
+  <div id="categoryPanels" hidden>
+    <div class="category-content" data-cat="motion">
+      <div class="col-label">Motion</div>
+      <div class="option" role="button" tabindex="0" data-type="motion" data-val="still">Still</div>
+      <div class="option active" role="button" tabindex="0" data-type="motion" data-val="wave">Wave</div>
+      <div class="option" role="button" tabindex="0" data-type="motion" data-val="storm">Storm</div>
+    </div>
+
+    <div class="category-content" data-cat="style">
+      <div class="col-label">Style</div>
+      <div class="theme-scroll" id="themeScroll">
+        <label class="option option-picker" id="colorPickerRow" data-type="theme" data-val="custom" tabindex="0">
+          <span class="picker-swatch" id="pickerSwatch"></span>
+          <span id="pickerLabel">Custom</span>
+          <input type="color" id="colorPickerInput" value="#c9c2b4" />
+        </label>
+        <div class="option active" role="button" tabindex="0" data-type="theme" data-val="mist">Mist</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="ocean">Ocean</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="abyss">Abyss</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="clay">Clay</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="sage">Sage</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="dune">Dune</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="plum">Plum</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="moss">Moss</div>
+        <div class="option" role="button" tabindex="0" data-type="theme" data-val="rosewood">Rosewood</div>
+      </div>
+    </div>
+
+    <div class="category-content" data-cat="speed">
+      <div class="col-label">Speed</div>
+      <div class="option" role="button" tabindex="0" data-type="speed" data-val="0.5">0.5×</div>
+      <div class="option active" role="button" tabindex="0" data-type="speed" data-val="1">1×</div>
+      <div class="option" role="button" tabindex="0" data-type="speed" data-val="1.5">1.5×</div>
+      <div class="option" role="button" tabindex="0" data-type="speed" data-val="2">2×</div>
+    </div>
+
+    <div class="category-content" data-cat="ratio">
+      <div class="col-label">Ratio</div>
+      <div class="option active" role="button" tabindex="0" data-type="ratio" data-val="1:1">Square · 1:1</div>
+      <div class="option" role="button" tabindex="0" data-type="ratio" data-val="4:3">Landscape · 4:3</div>
+      <div class="option" role="button" tabindex="0" data-type="ratio" data-val="3:4">Portrait · 3:4</div>
+      <div class="option" role="button" tabindex="0" data-type="ratio" data-val="16:9">Wide · 16:9</div>
+      <div class="option" role="button" tabindex="0" data-type="ratio" data-val="9:16">Story · 9:16</div>
+    </div>
+
+    <div class="category-content" data-cat="size">
+      <div class="col-label">Size</div>
+      <div class="option" role="button" tabindex="0" data-type="size" data-val="128">Icon · 128</div>
+      <div class="option active" role="button" tabindex="0" data-type="size" data-val="256">Card · 256</div>
+      <div class="option" role="button" tabindex="0" data-type="size" data-val="512">Cover · 512</div>
+      <div class="option" role="button" tabindex="0" data-type="size" data-val="1024">Poster · 1024</div>
+    </div>
+  </div>
+
+  <script>
+    // =======================================================
+    // 1. 视频逐帧提取的高级纯净色彩矩阵
+    // =======================================================
+    const PALETTES = {
+      // Mist: 纯净粉雾浅蓝 (低饱和、通透天青色)
+      mist: {
+        shadow: '#6886a9',
+        mid:    '#9bb4d0',
+        light:  '#c6d7eb',
+        peak:   '#eaf2fa',
+        glow:   'rgba(198, 215, 235, 0.6)'
+      },
+      // Ocean: 钢蓝渐变色谱 (源自 #5d8fcb → #2c6099 → #224d8a，明亮澄澈)
+      ocean: {
+        shadow: '#1b4073',
+        mid:    '#2c6099',
+        light:  '#5d8fcb',
+        peak:   '#82b4e8',
+        glow:   'rgba(93, 143, 203, 0.45)'
+      },
+      // Abyss: 黑曜石墨蓝 (再提亮一档：暗而有层次)
+      abyss: {
+        shadow: '#0a1e42',
+        mid:    '#173457',
+        light:  '#2a4f84',
+        peak:   '#3f68a6',
+        glow:   'rgba(26, 52, 96, 0.55)'
+      },
+      // 莫兰迪命名色板：低饱和、雾面质感
+      clay: {
+        shadow: '#7a5347', mid: '#a9776a', light: '#c9a293', peak: '#ecdbd2',
+        glow: 'rgba(201, 162, 147, 0.5)'
+      },
+      sage: {
+        shadow: '#4f5c47', mid: '#7c8a70', light: '#a8b89c', peak: '#dbe4d2',
+        glow: 'rgba(168, 184, 156, 0.5)'
+      },
+      dune: {
+        shadow: '#6b5d3f', mid: '#a08c5f', light: '#c7b98c', peak: '#ece2c8',
+        glow: 'rgba(199, 185, 140, 0.5)'
+      },
+      plum: {
+        shadow: '#4f3f52', mid: '#7a637d', light: '#a58fa8', peak: '#ddd0df',
+        glow: 'rgba(165, 143, 168, 0.5)'
+      },
+      moss: {
+        shadow: '#34402f', mid: '#5c6b52', light: '#8a977e', peak: '#cdd6c2',
+        glow: 'rgba(138, 151, 126, 0.5)'
+      },
+      rosewood: {
+        shadow: '#6b4048', mid: '#9c6870', light: '#c2949a', peak: '#ecd6d8',
+        glow: 'rgba(194, 148, 154, 0.5)'
+      }
+    };
+
+    // 物理形态配置 (解耦控制：扭曲度 warp、折痕深度 fold、振幅 amp、流动速度 speed)
+    const MOTIONS = {
+      still: { warp: 0.18, fold: 0.10, amp: 0.55, speed: 0.30 },
+      wave:  { warp: 0.65, fold: 0.40, amp: 0.70, speed: 0.55 },
+      storm: { warp: 1.45, fold: 0.95, amp: 1.15, speed: 0.95 }
+    };
+
+    // =======================================================
+    // 2. 颜色转换辅助函数 (取色器 + 阴影同色调用)
+    // =======================================================
+    function hexToRgb01(hex) {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const num = parseInt(hex, 16);
+      return { r: (num >> 16 & 255) / 255, g: (num >> 8 & 255) / 255, b: (num & 255) / 255 };
+    }
+    function hexToRgb255(hex) {
+      const { r, g, b } = hexToRgb01(hex);
+      return { r: r * 255, g: g * 255, b: b * 255 };
+    }
+    function rgbToHsl(r, g, b) {
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) { h = s = 0; }
+      else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          default: h = (r - g) / d + 4;
+        }
+        h /= 6;
+      }
+      return { h, s, l };
+    }
+    function hslToRgb01(h, s, l) {
+      let r, g, b;
+      if (s === 0) { r = g = b = l; }
+      else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+      }
+      return { r, g, b };
+    }
+    function rgb01ToHex(r, g, b) {
+      const toHex = v => Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, '0');
+      return '#' + toHex(r) + toHex(g) + toHex(b);
+    }
+    // 任意选色统一压到莫兰迪级低饱和度，保持整体调性一致
+    function makeRampFromHex(hex) {
+      const { r, g, b } = hexToRgb01(hex);
+      const { h } = rgbToHsl(r, g, b);
+      const sat = 0.28;
+      const mk = l => rgb01ToHex(...Object.values(hslToRgb01(h, sat, l)));
+      const lc = hslToRgb01(h, sat, 0.6);
+      return {
+        shadow: mk(0.24),
+        mid: mk(0.46),
+        light: mk(0.70),
+        peak: mk(0.90),
+        glow: `rgba(${Math.round(lc.r * 255)}, ${Math.round(lc.g * 255)}, ${Math.round(lc.b * 255)}, 0.5)`
+      };
+    }
+
+    // 比例预设：Ratio 分类只改变宽高比，不改变整体尺寸
+    const RATIOS = {
+      '1:1':  { w: 1,  h: 1 },
+      '4:3':  { w: 4,  h: 3 },
+      '3:4':  { w: 3,  h: 4 },
+      '16:9': { w: 16, h: 9 },
+      '9:16': { w: 9,  h: 16 }
+    };
+
+    let currentMotion = 'wave';
+    let currentTheme = 'mist';
+    let currentRatioKey = '1:1';
+    let currentSize = 256; // 参照边长（长边）：Size 预设 + 拖拽手柄共用同一个值
+    let speedMultiplier = 1;
+
+    // 分类展开状态：最多两个槽位 (left/right)，FIFO 顶替
+    let slots = { left: null, right: null };
+    let activationOrder = [];
+    let slotGen = { left: 0, right: 0 };
+
+    // =======================================================
+    // 3. WebGL + 对角 S 型缎带流体着色器 (零噪点颗粒)
+    // =======================================================
+    const canvas = document.getElementById('webgl-canvas');
+    const cardEl = document.getElementById('card');
+    const glowEl = document.getElementById('glow');
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: true // 允许 canvas.toBlob() 导出静态帧
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `;
+
+    // 连续光滑对角波形场 + 哑光丝缎漫反射着色器
+    const fragmentShader = `
+      uniform float uTime;
+      uniform float uWarp;
+      uniform float uFold;
+      uniform float uAmp;
+      uniform vec2 uLightShift;
+
+      uniform vec3 uColorShadow;
+      uniform vec3 uColorMid;
+      uniform vec3 uColorLight;
+      uniform vec3 uColorPeak;
+
+      varying vec2 vUv;
+
+      // 连续流体波形场：流向随时间扫掠 + 涌动回流 + 独立交叉织动 (零噪点、纯解析)
+      float getSurfaceHeight(vec2 uv) {
+        vec2 p = uv * 2.0 - 1.0;
+
+        float T = uTime * 0.75;
+
+        // 织物垂坠：流向角沿曲面弯曲 + 随时间缓慢扫掠 (±28°，周期约 18s，方向不再固定)
+        float ang = -0.72 + 0.32 * sin(p.y * 1.1 + 0.6) + 0.5 * sin(T * 0.35 + 0.9);
+        mat2 rot = mat2(cos(ang), -sin(ang), sin(ang), cos(ang));
+        p = rot * p;
+
+        // 涌动时间：流速周期性前涌 (0.85±1.0 → 含轻微回流段)
+        float surge = T * 0.85 + 2.4 * sin(T * 0.42 + 1.3);
+        float tR = T * 0.8;
+        float tF = T * 1.6;
+
+        // 域扭曲幅度上限 1.0：保持有组织褶皱，杜绝波面回折成混沌涡旋
+        vec2 warp = vec2(
+          sin(p.y * 1.5 + tR * 0.6) * 0.45,
+          cos(p.x * 1.3 - tR * 0.5) * 0.45
+        ) * min(uWarp, 1.0);
+
+        vec2 q = p + warp;
+
+        // 主缎带波：随涌动相位前行
+        float w1 = sin(q.x * 2.0 + q.y * 0.9 + surge * 1.1);
+        // 平行细褶层 (与主波同向高频，随 fold 加深；风暴 = 密集同向细褶)
+        float w2 = sin(q.x * 4.6 + q.y * 2.0 + tF);
+        // 反向回摆系：独立扫掠角，与主波族的交叉角度随时间变化（织动感）
+        float ang3 = 0.5 + 0.45 * sin(T * 0.23 + 2.0);
+        mat2 rot3 = mat2(cos(ang3), -sin(ang3), sin(ang3), cos(ang3));
+        vec2 q3 = rot3 * q;
+        float w3 = cos(q3.y * 1.6 - q3.x * 0.8 - tR * 0.9) * 0.28;
+
+        // 阵风脉冲作用于细褶层
+        float gust = 0.75 + 0.25 * sin(T * 0.8 + 2.1);
+
+        // 归一化包络：各模式幅度保持有界，色阶不撕裂
+        float h = (w1 + w2 * 0.55 * uFold * gust + w3) / (1.0 + 0.55 * uFold + 0.28);
+        return h * uAmp;
+      }
+
+      void main() {
+        vec2 uv = vUv;
+        // 高湍流下加宽采样窗口，法线更稳，消除细碎闪烁
+        float eps = 0.020 * (1.0 + 0.25 * min(uWarp, 1.0));
+
+        float hc = getSurfaceHeight(uv);
+        float hr = getSurfaceHeight(uv + vec2(eps, 0.0));
+        float ht = getSurfaceHeight(uv + vec2(0.0, eps));
+
+        // 提取表面微曲率法线
+        vec3 normal = normalize(vec3((hc - hr) / eps * 0.5, (hc - ht) / eps * 0.5, 0.9));
+
+        // 摄影棚定向主光 (右上角打光，随指针微移)
+        vec3 lightDir = normalize(vec3(0.5 + uLightShift.x * 0.45, 0.7 + uLightShift.y * 0.35, 0.8));
+        vec3 viewDir  = vec3(0.0, 0.0, 1.0);
+
+        // 半兰伯特超柔漫反射
+        float diff = clamp(dot(normal, lightDir) * 0.5 + 0.5, 0.0, 1.0);
+
+        // 边缘丝绒微光 (Velvet Sheen)
+        float sheen = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.2);
+
+        // 陶瓷微光泽 (同色系 spec；高湍流下减弱，抑制沙沙闪光)
+        vec3 halfDir = normalize(lightDir + viewDir);
+        float specFade = 1.0 - 0.5 * smoothstep(1.0, 1.5, uWarp);
+        float spec = pow(max(dot(normal, halfDir), 0.0), 26.0) * 0.22 * specFade;
+
+        // 高度归一化 + 缓慢呼吸振幅（丝绸原位起伏感）
+        float breath = 0.82 + 0.18 * sin(uTime * 0.35);
+        float hNorm = clamp((hc + 1.2) / 2.4, 0.0, 1.0) * breath;
+
+        // 纯色阶非线性级联（无白色点状反光，保持纯色相）
+        vec3 col = uColorShadow;
+        col = mix(col, uColorMid, smoothstep(0.05, 0.48, hNorm));
+        col = mix(col, uColorLight, smoothstep(0.38, 0.82, hNorm) * diff);
+        col = mix(col, uColorPeak, smoothstep(0.70, 1.0, hNorm) * diff);
+
+        // 叠加同色系天鹅绒边缘微光与陶瓷高光
+        col += uColorPeak * (sheen * 0.30 + spec);
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `;
+
+    const uniforms = {
+      uTime: { value: 0 },
+      uWarp: { value: MOTIONS.wave.warp },
+      uFold: { value: MOTIONS.wave.fold },
+      uAmp:  { value: MOTIONS.wave.amp },
+      uLightShift: { value: new THREE.Vector2(0, 0) },
+      uSpeed: { value: MOTIONS.wave.speed },
+      uColorShadow: { value: new THREE.Color(PALETTES.mist.shadow) },
+      uColorMid:    { value: new THREE.Color(PALETTES.mist.mid) },
+      uColorLight:  { value: new THREE.Color(PALETTES.mist.light) },
+      uColorPeak:   { value: new THREE.Color(PALETTES.mist.peak) }
+    };
+
+    const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+
+    // 动画主循环
+    const clock = new THREE.Clock();
+    let rafId = null;
+
+    function animate() {
+      rafId = requestAnimationFrame(animate);
+      uniforms.uTime.value += clock.getDelta() * uniforms.uSpeed.value;
+      renderer.render(scene, camera);
+      renderPaths();
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      } else if (!rafId) {
+        animate();
+      }
+    });
+
+    function resizeRenderer() {
+      const rect = cardEl.getBoundingClientRect();
+      renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
+    }
+    resizeRenderer();
+    new ResizeObserver(resizeRenderer).observe(cardEl);
+
+    // =======================================================
+    // 4. SVG 动态弹性贝塞尔曲线 — 槽位感知、空槽安全
+    // =======================================================
+    const leftPath = document.getElementById('line-left');
+    const rightPath = document.getElementById('line-right');
+    const dotTextL = document.getElementById('dot-textL');
+    const dotCardL = document.getElementById('dot-cardL');
+    const dotCardR = document.getElementById('dot-cardR');
+    const dotTextR = document.getElementById('dot-textR');
+    const themeScroll = document.getElementById('themeScroll');
+    const slotEls = { left: document.getElementById('slotLeft'), right: document.getElementById('slotRight') };
+
+    const lineState = { leftY: 0, rightY: 0 };
+
+    // Style 分类只露出 4 行，其余靠滚动；根据实际渲染行高动态设置视窗高度
+    // 面板停靠在隐藏区时不可测量，直接跳过，避免把 maxHeight 算成 0
+    function fitThemeScroll() {
+      if (themeScroll.offsetParent === null) return;
+      const items = themeScroll.querySelectorAll('.option');
+      if (items.length > 4) {
+        const top = items[0].getBoundingClientRect().top;
+        const bottom = items[3].getBoundingClientRect().bottom;
+        themeScroll.style.maxHeight = Math.ceil(bottom - top) + 'px';
+      } else {
+        themeScroll.style.maxHeight = 'none';
+      }
+    }
+    window.addEventListener('resize', fitThemeScroll);
+
+    function sideAnchor(slotEl) {
+      const activeOpt = slotEl.querySelector('.option.active');
+      if (!activeOpt) return null;
+      const rect = activeOpt.getBoundingClientRect();
+      let y = rect.top + rect.height * 0.5;
+      if (activeOpt.closest('.theme-scroll')) {
+        // 若当前选中的色板项被滚动到可视窗口之外，把连线端点钳制在窗口边缘内
+        const scrollRect = themeScroll.getBoundingClientRect();
+        y = Math.min(Math.max(y, scrollRect.top + 6), scrollRect.bottom - 6);
+      }
+      return { rect, y };
+    }
+
+    function getAnchors() {
+      const cardRect = cardEl.getBoundingClientRect();
+      const L = sideAnchor(slotEls.left);
+      const R = sideAnchor(slotEls.right);
+      return {
+        cardL: { x: cardRect.left, y: cardRect.top + cardRect.height * 0.5 },
+        cardR: { x: cardRect.right, y: cardRect.top + cardRect.height * 0.5 },
+        textL: L ? { x: L.rect.right + 14, y: L.y } : null,
+        textR: R ? { x: R.rect.left - 14, y: R.y } : null
+      };
+    }
+
+    function renderPaths() {
+      const anchors = getAnchors();
+
+      if (anchors.textL) {
+        const lx1 = anchors.textL.x, ly1 = lineState.leftY;
+        const lx2 = anchors.cardL.x, ly2 = anchors.cardL.y;
+        const ldx = (lx2 - lx1) * 0.52;
+        leftPath.setAttribute('d', `M ${lx1} ${ly1} C ${lx1 + ldx} ${ly1}, ${lx2 - ldx} ${ly2}, ${lx2} ${ly2}`);
+        dotTextL.setAttribute('cx', lx1);
+        dotTextL.setAttribute('cy', ly1);
+        dotCardL.setAttribute('cx', lx2);
+        dotCardL.setAttribute('cy', ly2);
+      }
+
+      if (anchors.textR) {
+        const rx1 = anchors.cardR.x, ry1 = anchors.cardR.y;
+        const rx2 = anchors.textR.x, ry2 = lineState.rightY;
+        const rdx = (rx2 - rx1) * 0.52;
+        rightPath.setAttribute('d', `M ${rx1} ${ry1} C ${rx1 + rdx} ${ry1}, ${rx2 - rdx} ${ry2}, ${rx2} ${ry2}`);
+        dotCardR.setAttribute('cx', rx1);
+        dotCardR.setAttribute('cy', ry1);
+        dotTextR.setAttribute('cx', rx2);
+        dotTextR.setAttribute('cy', ry2);
+      }
+    }
+
+    function showConnectorSide(side) {
+      const els = side === 'left' ? [leftPath, dotTextL, dotCardL] : [rightPath, dotCardR, dotTextR];
+      gsap.to(els, { opacity: 1, duration: 0.4 * D, ease: "power2.out", overwrite: "auto" });
+    }
+    function hideConnectorSide(side) {
+      const els = side === 'left' ? [leftPath, dotTextL, dotCardL] : [rightPath, dotCardR, dotTextR];
+      gsap.to(els, { opacity: 0, duration: 0.3 * D, ease: "power2.in", overwrite: "auto" });
+    }
+
+    // =======================================================
+    // 5. GSAP 交互补间引擎
+    // =======================================================
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const D = reduced ? 0 : 1;
+
+    const shadowTint = hexToRgb255(PALETTES.mist.shadow); // 与 CSS 默认值 --shadow-tint 对齐
+
+    // 四阶色彩过渡（Mist/Ocean/Abyss/莫兰迪色板/自定义取色 共用）+ 阴影同步染色
+    function tweenToPalette(target) {
+      const shadow = new THREE.Color(target.shadow);
+      const mid = new THREE.Color(target.mid);
+      const light = new THREE.Color(target.light);
+      const peak = new THREE.Color(target.peak);
+
+      const ease = "power2.out";
+      const dur = 0.95 * D;
+      gsap.to(uniforms.uColorShadow.value, { r: shadow.r, g: shadow.g, b: shadow.b, duration: dur, ease, overwrite: "auto" });
+      gsap.to(uniforms.uColorMid.value,    { r: mid.r,    g: mid.g,    b: mid.b,    duration: dur, ease, overwrite: "auto" });
+      gsap.to(uniforms.uColorLight.value,  { r: light.r,  g: light.g,  b: light.b,  duration: dur, ease, overwrite: "auto" });
+      gsap.to(uniforms.uColorPeak.value,   { r: peak.r,   g: peak.g,   b: peak.b,   duration: dur, ease, overwrite: "auto" });
+
+      gsap.to(glowEl, { backgroundColor: target.glow, duration: dur, ease, overwrite: "auto" });
+      gsap.fromTo(glowEl, { opacity: 0.68 }, { opacity: 0.5, duration: 1.3 * D, ease: "power2.out", overwrite: "auto" });
+
+      // 卡片阴影跟随主题色（用同色系深色，而非固定灰黑）
+      const tint = hexToRgb255(target.shadow);
+      gsap.to(shadowTint, {
+        r: tint.r, g: tint.g, b: tint.b, duration: dur, ease, overwrite: "auto",
+        onUpdate: () => cardEl.style.setProperty('--shadow-tint', `${shadowTint.r | 0}, ${shadowTint.g | 0}, ${shadowTint.b | 0}`)
+      });
+    }
+
+    function selectOption(el) {
+      const type = el.dataset.type;
+      const val = el.dataset.val;
+
+      if (type === 'motion' && val === currentMotion) return;
+      if (type === 'theme' && val === currentTheme) return;
+      if (type === 'speed' && +val === speedMultiplier) return;
+      if (type === 'ratio' && val === currentRatioKey) return;
+      if (type === 'size' && +val === currentSize) return;
+
+      el.parentElement.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+      el.classList.add('active');
+
+      const mountedSide = el.closest('#slotLeft') ? 'left' : (el.closest('#slotRight') ? 'right' : null);
+
+      if (type === 'motion') {
+        currentMotion = val;
+        const target = MOTIONS[val];
+        gsap.to(uniforms.uWarp, { value: target.warp, duration: 1.1 * D, ease: "power2.out", overwrite: "auto" });
+        gsap.to(uniforms.uFold, { value: target.fold, duration: 1.1 * D, ease: "power2.out", overwrite: "auto" });
+        gsap.to(uniforms.uAmp,  { value: target.amp,  duration: 1.2 * D, ease: "back.out(1.5)", overwrite: "auto" });
+        gsap.to(uniforms.uSpeed, { value: target.speed * speedMultiplier, duration: 0.9 * D, ease: "power2.out", overwrite: "auto" });
+
+      } else if (type === 'theme') {
+        currentTheme = val;
+        tweenToPalette(PALETTES[val]);
+
+      } else if (type === 'speed') {
+        speedMultiplier = +val;
+        gsap.to(uniforms.uSpeed, { value: MOTIONS[currentMotion].speed * speedMultiplier, duration: 0.6 * D, ease: "power2.out", overwrite: "auto" });
+
+      } else if (type === 'ratio') {
+        currentRatioKey = val;
+        applyDimensions();
+
+      } else if (type === 'size') {
+        currentSize = +val;
+        applyDimensions();
+      }
+
+      if (mountedSide) {
+        const anchors = getAnchors();
+        const anchor = mountedSide === 'left' ? anchors.textL : anchors.textR;
+        if (anchor) {
+          const key = mountedSide === 'left' ? 'leftY' : 'rightY';
+          gsap.to(lineState, { [key]: anchor.y, duration: 0.55 * D, ease: "power2.out", overwrite: "auto" });
+        }
+      }
+    }
+
+    // 普通色板/动效选项走点击 + 键盘；取色器行单独处理（避免与 selectOption 冲突）
+    document.querySelectorAll('.option:not(.option-picker)').forEach(el => {
+      el.addEventListener('click', () => selectOption(el));
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectOption(el);
+        }
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      const anchors = getAnchors();
+      if (anchors.textL) lineState.leftY = anchors.textL.y;
+      if (anchors.textR) lineState.rightY = anchors.textR.y;
+      renderPaths();
+    });
+
+    // 光源跟随指针（丝面反射感，不引入任何对齐问题）
+    if (!reduced) {
+      window.addEventListener('pointermove', e => {
+        const r = cardEl.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(uniforms.uLightShift.value, { x: nx * 2, y: ny * 1.6, duration: 1.2, ease: "power3.out", overwrite: "auto" });
+      });
+    }
+
+    // =======================================================
+    // 6. 自定义取色器（隶属 Style 分类）
+    // =======================================================
+    const colorPickerRow = document.getElementById('colorPickerRow');
+    const colorPickerInput = document.getElementById('colorPickerInput');
+    const pickerSwatch = document.getElementById('pickerSwatch');
+    let customRamp = null;
+
+    function applyCustomColor(hex, live) {
+      customRamp = makeRampFromHex(hex);
+      pickerSwatch.style.background = hex;
+
+      if (currentTheme === 'custom' && live) {
+        // 拖动取色器实时预览，跳过重复的 active 切换开销
+        tweenToPalette(customRamp);
+        return;
+      }
+
+      themeScroll.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+      colorPickerRow.classList.add('active');
+      currentTheme = 'custom';
+
+      if (colorPickerRow.closest('#slotLeft') || colorPickerRow.closest('#slotRight')) {
+        const mountedSide = colorPickerRow.closest('#slotLeft') ? 'left' : 'right';
+        const anchors = getAnchors();
+        const anchor = mountedSide === 'left' ? anchors.textL : anchors.textR;
+        if (anchor) {
+          const key = mountedSide === 'left' ? 'leftY' : 'rightY';
+          gsap.to(lineState, { [key]: anchor.y, duration: 0.55 * D, ease: "power2.out", overwrite: "auto" });
+        }
+      }
+      tweenToPalette(customRamp);
+    }
+
+    colorPickerInput.addEventListener('input', () => applyCustomColor(colorPickerInput.value, true));
+    colorPickerRow.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        colorPickerInput.click();
+      }
+    });
+
+    // =======================================================
+    // 7. 分类展开引擎：左上角 4 个 category，最多同时占用两个槽位
+    //    再点第三个 → 顶替最早展开的那个（FIFO），占用它腾出的那一侧
+    // =======================================================
+    const panels = {};
+    document.querySelectorAll('#categoryPanels .category-content').forEach(el => {
+      panels[el.dataset.cat] = el;
+    });
+    const categoryParking = document.getElementById('categoryPanels');
+
+    function parkPanelImmediate(el) {
+      gsap.killTweensOf(el.querySelectorAll('.col-label, .option'));
+      categoryParking.appendChild(el);
+    }
+
+    function updateNavActiveStates() {
+      document.querySelectorAll('.category-item').forEach(el => {
+        el.classList.toggle('active', slots.left === el.dataset.cat || slots.right === el.dataset.cat);
+      });
+    }
+
+    function syncSideAnchor(side) {
+      const anchors = getAnchors();
+      if (side === 'left' && anchors.textL) lineState.leftY = anchors.textL.y;
+      if (side === 'right' && anchors.textR) lineState.rightY = anchors.textR.y;
+    }
+
+    function expandInSlot(side, catKey) {
+      slotGen[side]++;
+      slots[side] = catKey;
+      activationOrder.push(catKey);
+
+      // 防御性清扫：确保该槽位里不会同时躺着别的面板
+      Array.from(slotEls[side].children).forEach(child => {
+        if (child !== panels[catKey]) parkPanelImmediate(child);
+      });
+
+      slotEls[side].appendChild(panels[catKey]);
+      if (catKey === 'style') fitThemeScroll();
+
+      const kids = panels[catKey].querySelectorAll('.col-label, .option');
+      gsap.killTweensOf(kids);
+      gsap.fromTo(kids, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4 * D, stagger: 0.04, ease: "power3.out", overwrite: "auto" });
+
+      updateNavActiveStates();
+      syncSideAnchor(side);
+      showConnectorSide(side);
+    }
+
+    function collapseSlot(side) {
+      const catKey = slots[side];
+      if (!catKey) return;
+      slots[side] = null;
+      activationOrder = activationOrder.filter(k => k !== catKey);
+      hideConnectorSide(side);
+      updateNavActiveStates();
+
+      const myGen = ++slotGen[side];
+      const kids = panels[catKey].querySelectorAll('.col-label, .option');
+      gsap.killTweensOf(kids);
+      gsap.to(kids, {
+        opacity: 0, y: -8, duration: 0.2 * D, stagger: 0.02, ease: "power2.in", overwrite: "auto",
+        onComplete: () => { if (slotGen[side] === myGen) parkPanelImmediate(panels[catKey]); }
+      });
+    }
+
+    function toggleCategory(catKey) {
+      if (slots.left === catKey) { collapseSlot('left'); return; }
+      if (slots.right === catKey) { collapseSlot('right'); return; }
+
+      if (slots.left === null) {
+        expandInSlot('left', catKey);
+      } else if (slots.right === null) {
+        expandInSlot('right', catKey);
+      } else {
+        const oldestKey = activationOrder[0];
+        const side = (slots.left === oldestKey) ? 'left' : 'right';
+        collapseSlot(side);
+        expandInSlot(side, catKey);
+      }
+    }
+
+    document.querySelectorAll('.category-item').forEach(el => {
+      el.addEventListener('click', () => toggleCategory(el.dataset.cat));
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleCategory(el.dataset.cat);
+        }
+      });
+    });
+
+    // 键盘快捷键：即使对应分类当前收起，也照常更新状态（不强制展开面板）
+    window.addEventListener('keydown', e => {
+      const k = e.key;
+      if (k >= '1' && k <= '3') {
+        const el = panels.motion.querySelector(`[data-val="${['still', 'wave', 'storm'][+k - 1]}"]`);
+        if (el) selectOption(el);
+      }
+      if (k >= '4' && k <= '6') {
+        const el = panels.style.querySelector(`[data-val="${['mist', 'ocean', 'abyss'][+k - 4]}"]`);
+        if (el) selectOption(el);
+      }
+    });
+
+    // =======================================================
+    // 8. 画布尺寸：Ratio 只管宽高比，Size 预设 + 拖拽手柄共用同一套换算
+    //    上限钳制在 视窗较短边 * 2/3，避免卡片把整个屏幕塞满
+    // =======================================================
+    function computeDims(refSize, ratio) {
+      const aspect = ratio.w / ratio.h;
+      let width, height;
+      if (aspect >= 1) { width = refSize; height = refSize / aspect; }
+      else { height = refSize; width = refSize * aspect; }
+
+      const maxDim = Math.min(window.innerWidth, window.innerHeight) * (2 / 3);
+      const scale = Math.min(1, maxDim / Math.max(width, height));
+      return { width: width * scale, height: height * scale };
+    }
+    function radiusFor(dims) {
+      return Math.max(20, Math.min(140, Math.min(dims.width, dims.height) * 0.18));
+    }
+
+    function applyDimensions() {
+      const dims = computeDims(currentSize, RATIOS[currentRatioKey]);
+      const radius = radiusFor(dims);
+      glowEl.style.inset = -Math.max(30, Math.min(dims.width, dims.height) * 0.23) + 'px';
+
+      gsap.to(cardEl, {
+        width: dims.width,
+        height: dims.height,
+        borderRadius: radius,
+        duration: 0.6 * D,
+        ease: "power3.inOut",
+        onUpdate: () => { resizeRenderer(); renderPaths(); },
+        onComplete: fitThemeScroll
+      });
+    }
+
+    // 拖拽手柄：四个角都能拉，锁定当前比例等比缩放
+    // 每个角把"离卡片中心更远"定义为变大，靠符号区分四个角各自的正方向
+    const CORNER_SIGNS = {
+      tl: { x: -1, y: -1 },
+      tr: { x: 1,  y: -1 },
+      bl: { x: -1, y: 1  },
+      br: { x: 1,  y: 1  }
+    };
+    let dragState = null;
+
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+      const signs = CORNER_SIGNS[handle.dataset.corner];
+
+      handle.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        handle.setPointerCapture(e.pointerId);
+        gsap.killTweensOf(cardEl);
+        const rect = cardEl.getBoundingClientRect();
+        dragState = {
+          handle,
+          startX: e.clientX, startY: e.clientY,
+          startLong: Math.max(rect.width, rect.height),
+          ratio: RATIOS[currentRatioKey]
+        };
+        handle.classList.add('dragging');
+      });
+
+      handle.addEventListener('pointermove', e => {
+        if (!dragState || dragState.handle !== handle) return;
+        const dx = (e.clientX - dragState.startX) * signs.x;
+        const dy = (e.clientY - dragState.startY) * signs.y;
+        const delta = (dx + dy) / 2;
+        const refSize = Math.max(64, dragState.startLong + delta);
+        const dims = computeDims(refSize, dragState.ratio);
+        const radius = radiusFor(dims);
+
+        cardEl.style.width = dims.width + 'px';
+        cardEl.style.height = dims.height + 'px';
+        cardEl.style.borderRadius = radius + 'px';
+        glowEl.style.inset = -Math.max(30, Math.min(dims.width, dims.height) * 0.23) + 'px';
+        resizeRenderer();
+        renderPaths();
+      });
+
+      handle.addEventListener('pointerup', endDrag);
+      handle.addEventListener('pointercancel', endDrag);
+    });
+
+    function endDrag() {
+      if (!dragState) return;
+      const rect = cardEl.getBoundingClientRect();
+      currentSize = Math.round(Math.max(rect.width, rect.height));
+      // 拖拽出来的尺寸多半不精确匹配任何预设，清空 Size 面板的高亮
+      document.querySelectorAll('[data-type="size"].option').forEach(o => o.classList.remove('active'));
+      dragState.handle.classList.remove('dragging');
+      dragState = null;
+      fitThemeScroll();
+    }
+
+    // =======================================================
+    // 9. 导出：PNG / HTML / React / JSON — 只导出中间那个方块
+    // =======================================================
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    function downloadText(text, filename, mime) {
+      downloadBlob(new Blob([text], { type: mime || 'text/plain' }), filename);
+    }
+
+    function getCurrentState() {
+      const rect = cardEl.getBoundingClientRect();
+      return {
+        motion: currentMotion,
+        theme: currentTheme,
+        ratio: currentRatioKey,
+        warp: +uniforms.uWarp.value.toFixed(4),
+        fold: +uniforms.uFold.value.toFixed(4),
+        amp: +uniforms.uAmp.value.toFixed(4),
+        speed: +uniforms.uSpeed.value.toFixed(4),
+        colors: {
+          shadow: '#' + uniforms.uColorShadow.value.getHexString(),
+          mid: '#' + uniforms.uColorMid.value.getHexString(),
+          light: '#' + uniforms.uColorLight.value.getHexString(),
+          peak: '#' + uniforms.uColorPeak.value.getHexString()
+        },
+        size: currentSize,
+        width: Math.round(rect.width),
+        height: Math.round(rect.height)
+      };
+    }
+
+    // 圆角裁切后导出 2x 高清 PNG — 只取 WebGL canvas 本身像素，不含阴影/光晕/导航
+    // 直接读卡片当前的真实渲染尺寸，拖拽出的任意宽高比同样准确
+    function exportPNG() {
+      const rect = cardEl.getBoundingClientRect();
+      const width = Math.round(rect.width), height = Math.round(rect.height);
+      const radius = radiusFor({ width, height });
+      const scale = 2;
+      const off = document.createElement('canvas');
+      off.width = width * scale;
+      off.height = height * scale;
+      const ctx = off.getContext('2d');
+      const w = width * scale, h = height * scale, r = radius * scale;
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.arcTo(w, 0, w, h, r);
+      ctx.arcTo(w, h, 0, h, r);
+      ctx.arcTo(0, h, 0, 0, r);
+      ctx.arcTo(0, 0, w, 0, r);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(canvas, 0, 0, w, h);
+      off.toBlob(blob => downloadBlob(blob, 'fluid-card.png'), 'image/png');
+    }
+
+    function buildStandaloneHTML(state) {
+      const r = Math.round(radiusFor({ width: state.width, height: state.height }));
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Fluid Shader Card</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+<style>
+  html, body { margin: 0; height: 100%; display: flex; align-items: center; justify-content: center; background: #f3f3f1; }
+  #card { width: ${state.width}px; height: ${state.height}px; border-radius: ${r}px; overflow: hidden; }
+  canvas { width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+<div id="card"><canvas id="c"></canvas></div>
+<script>
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(${state.width}, ${state.height});
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const vertexShader = ${JSON.stringify(vertexShader)};
+const fragmentShader = ${JSON.stringify(fragmentShader)};
+const uniforms = {
+  uTime: { value: 0 },
+  uWarp: { value: ${state.warp} },
+  uFold: { value: ${state.fold} },
+  uAmp: { value: ${state.amp} },
+  uLightShift: { value: new THREE.Vector2(0, 0) },
+  uColorShadow: { value: new THREE.Color('${state.colors.shadow}') },
+  uColorMid: { value: new THREE.Color('${state.colors.mid}') },
+  uColorLight: { value: new THREE.Color('${state.colors.light}') },
+  uColorPeak: { value: new THREE.Color('${state.colors.peak}') }
+};
+const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+const clock = new THREE.Clock();
+const speed = ${state.speed};
+(function animate() {
+  requestAnimationFrame(animate);
+  uniforms.uTime.value += clock.getDelta() * speed;
+  renderer.render(scene, camera);
+})();
+<\/script>
+</body>
+</html>`;
+    }
+
+    function buildReactComponent(state) {
+      const r = Math.round(radiusFor({ width: state.width, height: state.height }));
+      return `import { useEffect, useRef } from "react";
+import * as THREE from "three";
+
+const vertexShader = ${JSON.stringify(vertexShader)};
+
+const fragmentShader = ${JSON.stringify(fragmentShader)};
+
+// exported from Flluid studio — motion: ${state.motion}, theme: ${state.theme}, ratio: ${state.ratio}
+export function FluidShaderCard({ width = ${state.width}, height = ${state.height} }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(width, height, false);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const uniforms = {
+      uTime: { value: 0 },
+      uWarp: { value: ${state.warp} },
+      uFold: { value: ${state.fold} },
+      uAmp: { value: ${state.amp} },
+      uLightShift: { value: new THREE.Vector2(0, 0) },
+      uColorShadow: { value: new THREE.Color("${state.colors.shadow}") },
+      uColorMid: { value: new THREE.Color("${state.colors.mid}") },
+      uColorLight: { value: new THREE.Color("${state.colors.light}") },
+      uColorPeak: { value: new THREE.Color("${state.colors.peak}") }
+    };
+
+    const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+
+    const clock = new THREE.Clock();
+    const speed = ${state.speed};
+    let rafId;
+    const animate = () => {
+      rafId = requestAnimationFrame(animate);
+      uniforms.uTime.value += clock.getDelta() * speed;
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      renderer.dispose();
+    };
+  }, [width, height]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width, height, display: "block", borderRadius: ${r} }}
+    />
+  );
+}
+`;
+    }
+
+    document.querySelectorAll('.export-item').forEach(el => {
+      const trigger = () => {
+        const state = getCurrentState();
+        switch (el.dataset.export) {
+          case 'png': exportPNG(); break;
+          case 'html': downloadText(buildStandaloneHTML(state), 'fluid-card.html', 'text/html'); break;
+          case 'react': downloadText(buildReactComponent(state), 'FluidShaderCard.tsx', 'text/plain'); break;
+          case 'json': downloadText(JSON.stringify(state, null, 2), 'fluid-card-params.json', 'application/json'); break;
+        }
+      };
+      el.addEventListener('click', trigger);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          trigger();
+        }
+      });
+    });
+
+    // 克制的入场序列：连线的显隐已交给 showConnectorSide/hideConnectorSide，
+    // 分类面板全部收起，这里只淡入卡片本体与左右上角两个导航
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.fromTo(glowEl, { opacity: 0 }, { opacity: 0.5, duration: 1.1 * D })
+      .fromTo(cardEl, { opacity: 0, scale: 0.95, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.85 * D }, '-=0.6')
+      .fromTo(['#categoryPanel', '#exportPanel'], { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.6 * D }, '-=0.5');
+
+    animate();
+  </script>
+</body>
+</html>
