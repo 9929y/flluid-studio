@@ -1,46 +1,46 @@
-# Fluid Shader Card
+# Flluid Studio
 
-一个流体着色卡片交互演示：中心一张 256×256 的 WebGL 流体卡片，左右两侧可分别切换**运动模式**（Still / Wave / Storm）与**色彩主题**（Mist / Ocean / Abyss），卡片与选项之间用流动虚线连接。
+A single-file WebGL fluid-shader card interaction prototype.
 
-## 特性
+Flluid Studio explores how a compact interface can make shader parameters feel tangible: one central fluid card, motion choices on one side, color themes on the other, and animated connection lines that make the selected state feel connected to the object it controls.
 
-- **WebGL 流体着色** — Three.js 实现的实时流体形变着色，卡片表面随时间流动
-- **物理形态解耦控制** — 扭曲度 `warp`、折痕深度 `fold`、振幅 `amp`、流动速度 `speed` 独立可调
-- **三种运动模式**
-  - `Still` — 静止（低扭曲、低振幅）
-  - `Wave` — 波浪（默认）
-  - `Storm` — 风暴（高扭曲、高折叠）
-- **三种色彩主题**（从视频逐帧提取的色彩矩阵）
-  - `Mist` — 粉雾浅蓝，低饱和通透
-  - `Ocean` — 钢蓝渐变色谱
-  - `Abyss` — 黑曜石墨蓝
-- **选项联动** — 卡片与左右选项之间有流动虚线 + 端点圆点连接
-- **响应式** — 移动端自动切换为纵向布局，隐藏连接线
-- **无障碍** — 键盘可操作选项（`Tab` + `Enter`），支持 `prefers-reduced-motion`
+## What It Does
 
-## 运行
+- Renders a 256 x 256 fluid card with a real-time Three.js fragment shader.
+- Lets the viewer switch between motion modes: Still, Wave, and Storm.
+- Lets the viewer switch between color themes: Mist, Ocean, and Abyss.
+- Uses animated SVG connector lines between controls and the card.
+- Adapts to mobile by switching layout and reducing visual complexity.
+- Supports keyboard interaction and `prefers-reduced-motion`.
 
-无需构建，直接双击打开 `index.html`，或本地起一个静态服务器：
+## Why It Matters
 
-```bash
-npx serve .
-```
+This is a small interaction prototype, but it shows a useful product-building instinct: making abstract visual settings readable through direct manipulation and stateful feedback.
 
-依赖（CDN）：
+The prototype is strongest as evidence for:
 
-- Three.js `r128`
-- GSAP `3.12.5`
+- Creative coding
+- Shader-based UI exploration
+- Interaction states
+- Accessible motion controls
+- Turning a visual reference into a reusable interface pattern
 
-## 交互
+## Implementation Notes
 
-| 操作 | 效果 |
-|---|---|
-| 鼠标悬停左侧选项 | 切换运动模式 |
-| 鼠标悬停右侧选项 | 切换色彩主题 |
-| `Tab` 聚焦 + `Enter` | 键盘切换 |
+- No build step required.
+- The demo runs from `index.html`.
+- Rendering uses Three.js from a CDN.
+- Motion transitions use GSAP from a CDN.
+- The shader is clipped inside a rounded card and layered with glow, inner highlight, and inner shadow treatments.
 
-## 技术说明
+## Attribution
 
-- 流体效果由 Three.js fragment shader 驱动，卡片圆角 `46px` 内裁切
-- 卡片外围有柔光光晕（`glow`），表面叠加内高光/内阴影质感
-- 虚线连接线使用 SVG `stroke-dasharray` 动画，方向随选项激活状态流动
+This project references [`napnow/fluid-shader-card`](https://github.com/napnow/fluid-shader-card) as its source base. Keep that attribution when publishing.
+
+## Recommended Repo Description
+
+Single-file WebGL fluid-shader card prototype with motion/theme controls, animated connectors, and accessible interaction states.
+
+## Suggested Topics
+
+`webgl`, `threejs`, `shader`, `creative-coding`, `interaction-design`, `prototype`, `design-engineering`
