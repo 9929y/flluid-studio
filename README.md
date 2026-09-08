@@ -41,3 +41,9 @@ Single-file WebGL fluid-shader card prototype with motion/theme controls, animat
 ## Suggested Topics
 
 `webgl`, `threejs`, `shader`, `creative-coding`, `interaction-design`, `prototype`, `design-engineering`
+
+## Design baseline and responsive behavior
+
+Restores the original bare-text interface from commit `41d213be2cc1a731a78b87000c92b003e32bac31` (September 3, 2026), before the September 7 Pearl Flowglass redesign. Motion, Style, Speed, Ratio and Size are available, along with PNG, HTML, React and JSON exports.
+
+`responsive.css` adjusts spacing and wrapping without adding control panels. Mobile exports follow the content so they cannot cover the canvas. Canvas dimensions update with the viewport while preserving the selected aspect ratio.
