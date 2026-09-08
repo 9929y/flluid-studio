@@ -33,9 +33,6 @@ The prototype is strongest as evidence for:
 - Motion transitions use GSAP from a CDN.
 - The shader is clipped inside a rounded card and layered with glow, inner highlight, and inner shadow treatments.
 
-## Attribution
-
-This project references [`napnow/fluid-shader-card`](https://github.com/napnow/fluid-shader-card) as its source base. Keep that attribution when publishing.
 
 ## Recommended Repo Description
 
