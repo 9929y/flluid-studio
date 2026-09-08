@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fluid Silk Card - 1:1 Exact Match</title>
+  <title>Flluid Studio</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
@@ -11,7 +11,6 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      user-select: none;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -45,6 +44,18 @@
       z-index: 10;
     }
     .slot-left, .slot-right { min-width: 150px; }
+    .column.slot-right .category-content {
+      display: block;
+      min-width: 188px;
+      padding: 16px;
+      border: 1px solid var(--yy-glass-border, rgba(86, 101, 116, 0.18));
+      border-top-color: var(--yy-glass-edge, rgba(255,255,255,.96));
+      border-radius: var(--yy-radius-panel, 28px);
+      background: var(--yy-pane-strong, rgba(252, 253, 255, 0.72));
+      box-shadow: var(--yy-shadow-pane, 0 24px 64px rgba(64,79,97,.14));
+      -webkit-backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
+      backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
+    }
 
     .col-label {
       font-size: 10px;
@@ -58,7 +69,7 @@
     .option {
       font-size: 19px;
       letter-spacing: -0.015em;
-      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 52%, transparent);
+      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 84%, transparent);
       cursor: pointer;
       font-weight: 400;
       transition: color var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1)), transform var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
@@ -115,13 +126,13 @@
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-width: thin;
-      scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+      scrollbar-color: rgba(86, 101, 116, 0.26) transparent;
       padding-right: 4px;
       margin-right: -4px;
     }
     .theme-scroll::-webkit-scrollbar { width: 4px; }
     .theme-scroll::-webkit-scrollbar-track { background: transparent; }
-    .theme-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 2px; }
+    .theme-scroll::-webkit-scrollbar-thumb { background: rgba(86, 101, 116, 0.26); border-radius: 2px; }
 
     .option-picker {
       display: flex;
@@ -134,7 +145,7 @@
       height: 14px;
       border-radius: 50%;
       flex-shrink: 0;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(86, 101, 116, 0.24);
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.65);
       background: #c9c2b4;
       transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
@@ -204,39 +215,6 @@
       z-index: 2;
       touch-action: none;
     }
-    .card-zone:hover .resize-handle,
-    .resize-handle:focus-visible,
-    .resize-handle.dragging { opacity: 1; }
-    .resize-handle:hover, .resize-handle.dragging { transform: scale(1.12); }
-
-    .resize-handle[data-corner="tl"] {
-      left: -11px; top: -11px;
-      border-top-color: #7c8a9c; border-left-color: #7c8a9c;
-      border-top-left-radius: 13px;
-      cursor: nwse-resize;
-      transform-origin: top left;
-    }
-    .resize-handle[data-corner="tr"] {
-      right: -11px; top: -11px;
-      border-top-color: #7c8a9c; border-right-color: #7c8a9c;
-      border-top-right-radius: 13px;
-      cursor: nesw-resize;
-      transform-origin: top right;
-    }
-    .resize-handle[data-corner="bl"] {
-      left: -11px; bottom: -11px;
-      border-bottom-color: #7c8a9c; border-left-color: #7c8a9c;
-      border-bottom-left-radius: 13px;
-      cursor: nesw-resize;
-      transform-origin: bottom left;
-    }
-    .resize-handle[data-corner="br"] {
-      right: -11px; bottom: -11px;
-      border-bottom-color: #7c8a9c; border-right-color: #7c8a9c;
-      border-bottom-right-radius: 13px;
-      cursor: nwse-resize;
-      transform-origin: bottom right;
-    }
 
     #connector-svg {
       position: absolute;
@@ -251,7 +229,7 @@
 
     .dash-line {
       fill: none;
-      stroke: #c4c0b6;
+      stroke: var(--yy-hairline, #DCE1E6);
       stroke-width: 1.25;
       stroke-dasharray: 4.5 4.5;
       stroke-linecap: round;
@@ -262,16 +240,16 @@
     @keyframes dash-flow { to { stroke-dashoffset: -9; } }
 
     .line-dot {
-      fill: #98a4b4;
+      fill: rgba(114, 132, 151, 0.72);
       opacity: 0;
       transition: fill 0.4s ease, opacity 0.35s ease;
     }
 
-    /* 右侧导出：文字 + 下划线，无卡片背景，纵向与卡片居中对齐 */
+    /* 右侧导出是一个轻量的浮层，和创作控制共用同一块材质。 */
     .export-panel {
       position: fixed;
-      top: 0;
-      bottom: 0;
+      top: 50%;
+      bottom: auto;
       right: 40px;
       z-index: 50;
       display: flex;
@@ -279,20 +257,39 @@
       justify-content: center;
       align-items: flex-end;
       gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--yy-glass-border, rgba(86, 101, 116, 0.18));
+      border-top-color: var(--yy-glass-edge, rgba(255,255,255,.96));
+      border-radius: var(--yy-radius-panel, 28px);
+      background: var(--yy-pane-strong, rgba(252, 253, 255, 0.72));
+      box-shadow: var(--yy-shadow-pane, 0 24px 64px rgba(64,79,97,.14));
+      -webkit-backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
+      backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
+      transform: translateY(-50%);
       pointer-events: none;
     }
     .export-panel > * { pointer-events: auto; }
     .export-panel .col-label { text-align: right; margin-bottom: 0; }
     .export-item {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      font: inherit;
       font-size: 14px;
       letter-spacing: -0.01em;
-      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 52%, transparent);
+      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 84%, transparent);
       cursor: pointer;
       position: relative;
       outline: none;
       transition: color var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1)), transform var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
     }
     .export-item:hover, .export-item:focus-visible { color: var(--yy-ink-muted, #55534e); transform: translateX(-3px); }
+    .export-item:focus-visible,
+    .category-item:focus-visible {
+      outline: 2px solid var(--yy-focus, #5d7b9b);
+      outline-offset: 5px;
+      border-radius: 8px;
+    }
     .export-item::after {
       content: "";
       position: absolute;
@@ -308,11 +305,11 @@
     }
     .export-item:hover::after, .export-item:focus-visible::after { opacity: 0.45; transform: scaleX(1); }
 
-    /* 左侧：category 导航，与 Export 面板镜像对称，纵向与卡片居中对齐 */
+    /* 左侧是模式入口；一次只展开一个右侧控制面板。 */
     .category-panel {
       position: fixed;
-      top: 0;
-      bottom: 0;
+      top: 50%;
+      bottom: auto;
       left: 40px;
       z-index: 50;
       display: flex;
@@ -320,10 +317,23 @@
       justify-content: center;
       align-items: flex-start;
       gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--yy-glass-border, rgba(86, 101, 116, 0.18));
+      border-top-color: var(--yy-glass-edge, rgba(255,255,255,.96));
+      border-radius: var(--yy-radius-panel, 28px);
+      background: var(--yy-pane-strong, rgba(252, 253, 255, 0.72));
+      box-shadow: var(--yy-shadow-pane, 0 24px 64px rgba(64,79,97,.14));
+      -webkit-backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
+      backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
+      transform: translateY(-50%);
       pointer-events: none;
     }
     .category-panel > * { pointer-events: auto; }
     .category-item {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      font: inherit;
       font-size: 14px;
       letter-spacing: -0.01em;
       color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 52%, transparent);
@@ -354,12 +364,6 @@
     #categoryPanels[hidden] { display: none; }
     .category-content { display: contents; }
 
-    .studio-id{
-      position:fixed;top:30px;left:40px;z-index:60;display:flex;flex-direction:column;gap:3px;
-      color:var(--yy-ink,#242220);pointer-events:none;
-    }
-    .studio-id strong{font-size:13px;letter-spacing:-.02em;font-weight:600;}
-    .studio-id span{font-size:10px;letter-spacing:var(--yy-label-tracking,.08em);text-transform:uppercase;color:var(--yy-ink-quiet,#6d6a63);}
 
     @media (max-width: 760px) {
       body { overflow: auto; }
@@ -377,25 +381,19 @@
       .card-box { width: min(256px, 62vw); height: auto; aspect-ratio: 1; }
       #connector-svg { display: none; }
       .resize-handle { display: none; }
-      .category-panel { top: 20px; bottom: auto; left: 24px; justify-content: flex-start; }
-      .export-panel { top: 20px; bottom: auto; right: 24px; justify-content: flex-start; }
-      .studio-id { display:none; }
+      .category-panel { top: 20px; bottom: auto; left: 24px; justify-content: flex-start; transform: none; }
+      .export-panel { top: 20px; bottom: auto; right: 24px; justify-content: flex-start; transform: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .dash-line { animation: none; }
       .option { transition: color 0.35s ease; }
+      .fallback-fluid { animation: none; }
     }
   </style>
   <link rel="stylesheet" href="yy-studio.css">
 </head>
 <body>
-
-  <header class="studio-id" aria-label="Flluid Studio">
-    <strong>Flluid Studio</strong>
-    <span>Fluid material study</span>
-  </header>
-
   <div class="container">
     <svg id="connector-svg">
       <path id="line-left" class="dash-line"></path>
@@ -413,12 +411,8 @@
     <div class="card-zone">
       <div class="glow" id="glow"></div>
       <div class="card-box" id="card">
-        <canvas id="webgl-canvas"></canvas>
+        <canvas id="webgl-canvas" role="img" aria-label="Animated fluid card preview"></canvas>
       </div>
-      <div class="resize-handle" data-corner="tl" role="slider" aria-label="Resize card" tabindex="0"></div>
-      <div class="resize-handle" data-corner="tr" role="slider" aria-label="Resize card" tabindex="0"></div>
-      <div class="resize-handle" data-corner="bl" role="slider" aria-label="Resize card" tabindex="0"></div>
-      <div class="resize-handle" data-corner="br" role="slider" aria-label="Resize card" tabindex="0"></div>
     </div>
 
     <!-- 右槽位：展开的分类面板落在这里 -->
@@ -427,20 +421,15 @@
 
   <!-- 左上角：category 导航 -->
   <div class="category-panel" id="categoryPanel">
-    <div class="category-item" role="button" tabindex="0" data-cat="motion">Motion</div>
-    <div class="category-item" role="button" tabindex="0" data-cat="style">Style</div>
-    <div class="category-item" role="button" tabindex="0" data-cat="speed">Speed</div>
-    <div class="category-item" role="button" tabindex="0" data-cat="ratio">Ratio</div>
-    <div class="category-item" role="button" tabindex="0" data-cat="size">Size</div>
+    <button class="category-item" type="button" aria-controls="categoryPanels" aria-expanded="false" data-cat="motion">Motion</button>
+    <button class="category-item" type="button" aria-controls="categoryPanels" aria-expanded="false" data-cat="style">Colour</button>
+    <button class="category-item" type="button" aria-controls="categoryPanels" aria-expanded="false" data-cat="speed">Flow</button>
   </div>
 
   <!-- 右上角：导出 -->
   <div class="export-panel" id="exportPanel">
-    <div class="col-label">Export</div>
-    <div class="export-item" role="button" tabindex="0" data-export="png">PNG</div>
-    <div class="export-item" role="button" tabindex="0" data-export="html">HTML</div>
-    <div class="export-item" role="button" tabindex="0" data-export="react">React</div>
-    <div class="export-item" role="button" tabindex="0" data-export="json">JSON</div>
+    <button class="export-item" type="button" data-export="png">Export PNG</button>
+    <button class="export-item" type="button" data-export="html">Export HTML</button>
   </div>
 
   <!-- 停靠区：4 个分类面板，未展开时都待在这里，从不重建 DOM -->
@@ -661,6 +650,12 @@
     // Keep interaction available when a CDN fails or a browser declines a GPU
     // context (for example an embedded portfolio preview). The shim resolves
     // to the actual GSAP instance in normal use.
+    const fallbackTargets = target => {
+      if (typeof target === 'string') return [...document.querySelectorAll(target)];
+      if (Array.isArray(target)) return target;
+      if (target instanceof NodeList) return [...target];
+      return [target];
+    };
     const animation = window.gsap || {
       to(target, vars) {
         Object.entries(vars).forEach(([key, value]) => {
@@ -671,13 +666,20 @@
         return target;
       },
       fromTo(target, from, to) {
-        const targets = Array.isArray(target) ? target : (target instanceof NodeList ? [...target] : [target]);
+        const targets = fallbackTargets(target);
         targets.forEach(item => Object.assign(item.style || item, from));
         targets.forEach(item => this.to(item.style || item, to));
         return target;
       },
       killTweensOf() {},
-      timeline() { return { fromTo() { return this; } }; }
+      timeline() {
+        return {
+          fromTo(target, from, to) {
+            animation.fromTo(target, from, to);
+            return this;
+          }
+        };
+      }
     };
 
     let renderer = null;
@@ -850,6 +852,13 @@
 
     function animate() {
       if (!webglReady) return;
+      // A still first frame honors reduced-motion without removing the user's
+      // ability to change colour or export the card.
+      if (reduced) {
+        renderer.render(scene, camera);
+        renderPaths();
+        return;
+      }
       rafId = requestAnimationFrame(animate);
       uniforms.uTime.value += clock.getDelta() * uniforms.uSpeed.value;
       renderer.render(scene, camera);
@@ -860,7 +869,7 @@
       if (document.hidden) {
         cancelAnimationFrame(rafId);
         rafId = null;
-      } else if (webglReady && !rafId) {
+      } else if (webglReady && !rafId && !reduced) {
         animate();
       }
     });
@@ -1044,8 +1053,12 @@
       if (type === 'ratio' && val === currentRatioKey) return;
       if (type === 'size' && +val === currentSize) return;
 
-      el.parentElement.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+      el.parentElement.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('active');
+        opt.setAttribute('aria-pressed', 'false');
+      });
       el.classList.add('active');
+      el.setAttribute('aria-pressed', 'true');
 
       const mountedSide = el.closest('#slotLeft') ? 'left' : (el.closest('#slotRight') ? 'right' : null);
 
@@ -1084,8 +1097,10 @@
       }
     }
 
+
     // 普通色板/动效选项走点击 + 键盘；取色器行单独处理（避免与 selectOption 冲突）
     document.querySelectorAll('.option:not(.option-picker)').forEach(el => {
+      el.setAttribute('aria-pressed', String(el.classList.contains('active')));
       el.addEventListener('click', () => selectOption(el));
       el.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -1134,7 +1149,10 @@
         return;
       }
 
-      themeScroll.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+      themeScroll.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('active');
+        opt.setAttribute('aria-pressed', 'false');
+      });
       colorPickerRow.classList.add('active');
       currentTheme = 'custom';
 
@@ -1175,7 +1193,9 @@
 
     function updateNavActiveStates() {
       document.querySelectorAll('.category-item').forEach(el => {
-        el.classList.toggle('active', slots.left === el.dataset.cat || slots.right === el.dataset.cat);
+        const active = slots.left === el.dataset.cat || slots.right === el.dataset.cat;
+        el.classList.toggle('active', active);
+        el.setAttribute('aria-expanded', String(active));
       });
     }
 
@@ -1200,7 +1220,13 @@
 
       const kids = panels[catKey].querySelectorAll('.col-label, .option');
       animation.killTweensOf(kids);
-      animation.fromTo(kids, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4 * D, stagger: 0.04, ease: "power3.out", overwrite: "auto" });
+      // Direct controls need to be available in the first rendered frame.
+      // The artwork itself carries the liquid motion; delaying its controls
+      // adds friction without making the transition clearer.
+      kids.forEach(item => {
+        item.style.opacity = '1';
+        item.style.transform = 'none';
+      });
 
       updateNavActiveStates();
       syncSideAnchor(side);
@@ -1215,44 +1241,27 @@
       hideConnectorSide(side);
       updateNavActiveStates();
 
-      const myGen = ++slotGen[side];
       const kids = panels[catKey].querySelectorAll('.col-label, .option');
       animation.killTweensOf(kids);
-      animation.to(kids, {
-        opacity: 0, y: -8, duration: 0.2 * D, stagger: 0.02, ease: "power2.in", overwrite: "auto",
-        onComplete: () => { if (slotGen[side] === myGen) parkPanelImmediate(panels[catKey]); }
-      });
+      kids.forEach(item => { item.style.opacity = '0'; });
+      parkPanelImmediate(panels[catKey]);
     }
 
     function toggleCategory(catKey) {
-      if (slots.left === catKey) { collapseSlot('left'); return; }
+      // One active task at a time: changing a liquid card should never leave
+      // two unrelated control lists competing for attention.
       if (slots.right === catKey) { collapseSlot('right'); return; }
-
-      if (slots.left === null) {
-        expandInSlot('left', catKey);
-      } else if (slots.right === null) {
-        expandInSlot('right', catKey);
-      } else {
-        const oldestKey = activationOrder[0];
-        const side = (slots.left === oldestKey) ? 'left' : 'right';
-        collapseSlot(side);
-        expandInSlot(side, catKey);
-      }
+      if (slots.left) collapseSlot('left');
+      if (slots.right) collapseSlot('right');
+      expandInSlot('right', catKey);
     }
 
     document.querySelectorAll('.category-item').forEach(el => {
       el.addEventListener('click', () => toggleCategory(el.dataset.cat));
-      el.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleCategory(el.dataset.cat);
-        }
-      });
     });
 
-    // The first view answers the only two questions needed to start: what moves,
-    // and what material is selected. More controls remain one click away.
-    toggleCategory('motion');
+    // Colour is the first meaningful choice. Motion starts from the balanced
+    // Wave state and remains one click away rather than competing at launch.
     toggleCategory('style');
 
     // 键盘快捷键：即使对应分类当前收起，也照常更新状态（不强制展开面板）
@@ -1549,20 +1558,15 @@ export function FluidShaderCard({ width = ${state.width}, height = ${state.heigh
         }
       };
       el.addEventListener('click', trigger);
-      el.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          trigger();
-        }
-      });
     });
 
-    // 克制的入场序列：连线的显隐已交给 showConnectorSide/hideConnectorSide，
-    // 分类面板全部收起，这里只淡入卡片本体与左右上角两个导航
-    const tl = animation.timeline({ defaults: { ease: "power3.out" } });
-    tl.fromTo(glowEl, { opacity: 0 }, { opacity: 0.5, duration: 1.1 * D })
-      .fromTo(cardEl, { opacity: 0, scale: 0.95, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.85 * D }, '-=0.6')
-      .fromTo(['#categoryPanel', '#exportPanel'], { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.6 * D }, '-=0.5');
+    // Keep the first frame immediately usable. The fluid surface already has
+    // continuous motion; hiding the controls behind an entrance animation
+    // makes a fast colour/export workflow feel slower and harms offline views.
+    glowEl.style.opacity = '0.5';
+    cardEl.style.opacity = '1';
+    document.getElementById('categoryPanel').style.opacity = '1';
+    document.getElementById('exportPanel').style.opacity = '1';
 
     if (webglReady) animate();
   </script>
