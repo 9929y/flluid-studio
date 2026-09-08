@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flluid Studio</title>
+  <title>Fluid Studio</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
@@ -11,19 +11,20 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
       -webkit-font-smoothing: antialiased;
     }
 
     body {
       background:
-        radial-gradient(900px 620px at 16% 10%, rgba(255, 255, 255, 0.72), transparent 60%),
-        radial-gradient(1000px 700px at 86% 92%, rgba(239, 236, 232, 0.62), transparent 62%),
-        var(--yy-ground, #fff);
+        radial-gradient(900px 620px at 16% 10%, rgba(255, 255, 255, 0.55), transparent 60%),
+        radial-gradient(1000px 700px at 86% 92%, rgba(222, 226, 233, 0.5), transparent 62%),
+        #f3f3f1;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: var(--yy-font-sans, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
       overflow: hidden;
     }
 
@@ -44,24 +45,12 @@
       z-index: 10;
     }
     .slot-left, .slot-right { min-width: 150px; }
-    .column.slot-right .category-content {
-      display: block;
-      min-width: 188px;
-      padding: 16px;
-      border: 1px solid var(--yy-glass-border, rgba(86, 101, 116, 0.18));
-      border-top-color: var(--yy-glass-edge, rgba(255,255,255,.96));
-      border-radius: var(--yy-radius-panel, 28px);
-      background: var(--yy-pane-strong, rgba(252, 253, 255, 0.72));
-      box-shadow: var(--yy-shadow-pane, 0 24px 64px rgba(64,79,97,.14));
-      -webkit-backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
-      backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
-    }
 
     .col-label {
       font-size: 10px;
       letter-spacing: 0.32em;
       text-transform: uppercase;
-      color: var(--yy-ink-quiet, rgba(120, 116, 108, 0.6));
+      color: rgba(120, 116, 108, 0.6);
       margin-bottom: 4px;
     }
     .column.slot-right .col-label { text-align: right; }
@@ -69,21 +58,21 @@
     .option {
       font-size: 19px;
       letter-spacing: -0.015em;
-      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 84%, transparent);
+      color: #b8b4ac;
       cursor: pointer;
       font-weight: 400;
-      transition: color var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1)), transform var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+      transition: color 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
       position: relative;
       outline: none;
     }
 
     .column.slot-left .option:hover { transform: translateX(4px); }
     .column.slot-right .option:hover { transform: translateX(-4px); }
-    .option:focus-visible { color: var(--yy-ink, #242220); outline:2px solid var(--yy-focus,#242220); outline-offset:4px; }
-    .option:hover { color: var(--yy-ink-muted, #55534e); }
+    .option:focus-visible { color: #78746c; }
+    .option:hover { color: #78746c; }
 
     .option.active {
-      color: var(--yy-ink, #242220);
+      color: #1a1a1a;
       font-weight: 500;
     }
 
@@ -102,22 +91,6 @@
     }
     .option.active::after { opacity: 0.5; transform: scaleX(1); }
 
-    /* WebGL is the preferred material renderer. When a browser cannot create a
-       GPU context, controls stay usable and this quiet CSS surface preserves
-       the same material reading instead of leaving a dead canvas. */
-    .card-box.fallback-fluid {
-      background:
-        radial-gradient(120% 95% at 82% 8%, rgba(234,242,250,.95), transparent 47%),
-        radial-gradient(95% 110% at 8% 94%, rgba(104,134,169,.92), transparent 54%),
-        linear-gradient(142deg, #9bb4d0 0%, #c6d7eb 45%, #6886a9 100%);
-      background-size: 125% 125%, 135% 135%, 100% 100%;
-      animation: fallback-flow 8s ease-in-out infinite alternate;
-    }
-    @keyframes fallback-flow {
-      from { background-position: 0% 20%, 100% 80%, 50% 50%; }
-      to { background-position: 100% 80%, 0% 20%, 50% 50%; }
-    }
-
     /* Style 分类：色彩选择器行 + 可滚动色板列表 (屏幕始终只露出 4 项) */
     .theme-scroll {
       display: flex;
@@ -126,13 +99,13 @@
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-width: thin;
-      scrollbar-color: rgba(86, 101, 116, 0.26) transparent;
+      scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
       padding-right: 4px;
       margin-right: -4px;
     }
     .theme-scroll::-webkit-scrollbar { width: 4px; }
     .theme-scroll::-webkit-scrollbar-track { background: transparent; }
-    .theme-scroll::-webkit-scrollbar-thumb { background: rgba(86, 101, 116, 0.26); border-radius: 2px; }
+    .theme-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 2px; }
 
     .option-picker {
       display: flex;
@@ -145,7 +118,7 @@
       height: 14px;
       border-radius: 50%;
       flex-shrink: 0;
-      border: 1px solid rgba(86, 101, 116, 0.24);
+      border: 1px solid rgba(0, 0, 0, 0.15);
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.65);
       background: #c9c2b4;
       transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
@@ -215,6 +188,39 @@
       z-index: 2;
       touch-action: none;
     }
+    .card-zone:hover .resize-handle,
+    .resize-handle:focus-visible,
+    .resize-handle.dragging { opacity: 1; }
+    .resize-handle:hover, .resize-handle.dragging { transform: scale(1.12); }
+
+    .resize-handle[data-corner="tl"] {
+      left: -11px; top: -11px;
+      border-top-color: #7c8a9c; border-left-color: #7c8a9c;
+      border-top-left-radius: 13px;
+      cursor: nwse-resize;
+      transform-origin: top left;
+    }
+    .resize-handle[data-corner="tr"] {
+      right: -11px; top: -11px;
+      border-top-color: #7c8a9c; border-right-color: #7c8a9c;
+      border-top-right-radius: 13px;
+      cursor: nesw-resize;
+      transform-origin: top right;
+    }
+    .resize-handle[data-corner="bl"] {
+      left: -11px; bottom: -11px;
+      border-bottom-color: #7c8a9c; border-left-color: #7c8a9c;
+      border-bottom-left-radius: 13px;
+      cursor: nesw-resize;
+      transform-origin: bottom left;
+    }
+    .resize-handle[data-corner="br"] {
+      right: -11px; bottom: -11px;
+      border-bottom-color: #7c8a9c; border-right-color: #7c8a9c;
+      border-bottom-right-radius: 13px;
+      cursor: nwse-resize;
+      transform-origin: bottom right;
+    }
 
     #connector-svg {
       position: absolute;
@@ -229,7 +235,7 @@
 
     .dash-line {
       fill: none;
-      stroke: var(--yy-hairline, #DCE1E6);
+      stroke: #c4c0b6;
       stroke-width: 1.25;
       stroke-dasharray: 4.5 4.5;
       stroke-linecap: round;
@@ -240,16 +246,16 @@
     @keyframes dash-flow { to { stroke-dashoffset: -9; } }
 
     .line-dot {
-      fill: rgba(114, 132, 151, 0.72);
+      fill: #98a4b4;
       opacity: 0;
       transition: fill 0.4s ease, opacity 0.35s ease;
     }
 
-    /* 右侧导出是一个轻量的浮层，和创作控制共用同一块材质。 */
+    /* 右侧导出：文字 + 下划线，无卡片背景，纵向与卡片居中对齐 */
     .export-panel {
       position: fixed;
-      top: 50%;
-      bottom: auto;
+      top: 0;
+      bottom: 0;
       right: 40px;
       z-index: 50;
       display: flex;
@@ -257,39 +263,20 @@
       justify-content: center;
       align-items: flex-end;
       gap: 12px;
-      padding: 16px;
-      border: 1px solid var(--yy-glass-border, rgba(86, 101, 116, 0.18));
-      border-top-color: var(--yy-glass-edge, rgba(255,255,255,.96));
-      border-radius: var(--yy-radius-panel, 28px);
-      background: var(--yy-pane-strong, rgba(252, 253, 255, 0.72));
-      box-shadow: var(--yy-shadow-pane, 0 24px 64px rgba(64,79,97,.14));
-      -webkit-backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
-      backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
-      transform: translateY(-50%);
       pointer-events: none;
     }
     .export-panel > * { pointer-events: auto; }
     .export-panel .col-label { text-align: right; margin-bottom: 0; }
     .export-item {
-      border: 0;
-      padding: 0;
-      background: transparent;
-      font: inherit;
       font-size: 14px;
       letter-spacing: -0.01em;
-      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 84%, transparent);
+      color: #b8b4ac;
       cursor: pointer;
       position: relative;
       outline: none;
-      transition: color var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1)), transform var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+      transition: color 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .export-item:hover, .export-item:focus-visible { color: var(--yy-ink-muted, #55534e); transform: translateX(-3px); }
-    .export-item:focus-visible,
-    .category-item:focus-visible {
-      outline: 2px solid var(--yy-focus, #5d7b9b);
-      outline-offset: 5px;
-      border-radius: 8px;
-    }
+    .export-item:hover, .export-item:focus-visible { color: #78746c; transform: translateX(-3px); }
     .export-item::after {
       content: "";
       position: absolute;
@@ -305,11 +292,11 @@
     }
     .export-item:hover::after, .export-item:focus-visible::after { opacity: 0.45; transform: scaleX(1); }
 
-    /* 左侧是模式入口；一次只展开一个右侧控制面板。 */
+    /* 左侧：category 导航，与 Export 面板镜像对称，纵向与卡片居中对齐 */
     .category-panel {
       position: fixed;
-      top: 50%;
-      bottom: auto;
+      top: 0;
+      bottom: 0;
       left: 40px;
       z-index: 50;
       display: flex;
@@ -317,32 +304,19 @@
       justify-content: center;
       align-items: flex-start;
       gap: 12px;
-      padding: 16px;
-      border: 1px solid var(--yy-glass-border, rgba(86, 101, 116, 0.18));
-      border-top-color: var(--yy-glass-edge, rgba(255,255,255,.96));
-      border-radius: var(--yy-radius-panel, 28px);
-      background: var(--yy-pane-strong, rgba(252, 253, 255, 0.72));
-      box-shadow: var(--yy-shadow-pane, 0 24px 64px rgba(64,79,97,.14));
-      -webkit-backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
-      backdrop-filter: blur(var(--yy-glass-blur, 32px)) saturate(var(--yy-glass-saturate, 1.08));
-      transform: translateY(-50%);
       pointer-events: none;
     }
     .category-panel > * { pointer-events: auto; }
     .category-item {
-      border: 0;
-      background: transparent;
-      padding: 0;
-      font: inherit;
       font-size: 14px;
       letter-spacing: -0.01em;
-      color: color-mix(in srgb, var(--yy-ink-muted, #55534e) 52%, transparent);
+      color: #b8b4ac;
       cursor: pointer;
       position: relative;
       outline: none;
-      transition: color var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1)), transform var(--yy-duration-fast, 250ms) var(--yy-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+      transition: color 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .category-item:hover, .category-item:focus-visible { color: var(--yy-ink-muted, #55534e); transform: translateX(3px); }
+    .category-item:hover, .category-item:focus-visible { color: #78746c; transform: translateX(3px); }
     .category-item::after {
       content: "";
       position: absolute;
@@ -357,13 +331,12 @@
       transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
     }
     .category-item:hover::after, .category-item:focus-visible::after { opacity: 0.45; transform: scaleX(1); }
-    .category-item.active { color: var(--yy-ink, #242220); font-weight: 500; }
+    .category-item.active { color: #1a1a1a; font-weight: 500; }
     .category-item.active::after { opacity: 0.5; transform: scaleX(1); }
 
     /* 停靠区：未展开的分类面板待在这里，不参与布局 */
     #categoryPanels[hidden] { display: none; }
     .category-content { display: contents; }
-
 
     @media (max-width: 760px) {
       body { overflow: auto; }
@@ -381,19 +354,19 @@
       .card-box { width: min(256px, 62vw); height: auto; aspect-ratio: 1; }
       #connector-svg { display: none; }
       .resize-handle { display: none; }
-      .category-panel { top: 20px; bottom: auto; left: 24px; justify-content: flex-start; transform: none; }
-      .export-panel { top: 20px; bottom: auto; right: 24px; justify-content: flex-start; transform: none; }
+      .category-panel { top: 20px; bottom: auto; left: 24px; justify-content: flex-start; }
+      .export-panel { top: 20px; bottom: auto; right: 24px; justify-content: flex-start; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .dash-line { animation: none; }
       .option { transition: color 0.35s ease; }
-      .fallback-fluid { animation: none; }
     }
   </style>
-  <link rel="stylesheet" href="yy-studio.css">
+<link rel="stylesheet" href="responsive.css">
 </head>
 <body>
+
   <div class="container">
     <svg id="connector-svg">
       <path id="line-left" class="dash-line"></path>
@@ -411,8 +384,12 @@
     <div class="card-zone">
       <div class="glow" id="glow"></div>
       <div class="card-box" id="card">
-        <canvas id="webgl-canvas" role="img" aria-label="Animated fluid card preview"></canvas>
+        <canvas id="webgl-canvas"></canvas>
       </div>
+      <div class="resize-handle" data-corner="tl" role="slider" aria-label="Resize card" tabindex="0"></div>
+      <div class="resize-handle" data-corner="tr" role="slider" aria-label="Resize card" tabindex="0"></div>
+      <div class="resize-handle" data-corner="bl" role="slider" aria-label="Resize card" tabindex="0"></div>
+      <div class="resize-handle" data-corner="br" role="slider" aria-label="Resize card" tabindex="0"></div>
     </div>
 
     <!-- 右槽位：展开的分类面板落在这里 -->
@@ -421,15 +398,20 @@
 
   <!-- 左上角：category 导航 -->
   <div class="category-panel" id="categoryPanel">
-    <button class="category-item" type="button" aria-controls="categoryPanels" aria-expanded="false" data-cat="motion">Motion</button>
-    <button class="category-item" type="button" aria-controls="categoryPanels" aria-expanded="false" data-cat="style">Colour</button>
-    <button class="category-item" type="button" aria-controls="categoryPanels" aria-expanded="false" data-cat="speed">Flow</button>
+    <div class="category-item" role="button" tabindex="0" data-cat="motion">Motion</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="style">Style</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="speed">Speed</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="ratio">Ratio</div>
+    <div class="category-item" role="button" tabindex="0" data-cat="size">Size</div>
   </div>
 
   <!-- 右上角：导出 -->
   <div class="export-panel" id="exportPanel">
-    <button class="export-item" type="button" data-export="png">Export PNG</button>
-    <button class="export-item" type="button" data-export="html">Export HTML</button>
+    <div class="col-label">Export</div>
+    <div class="export-item" role="button" tabindex="0" data-export="png">PNG</div>
+    <div class="export-item" role="button" tabindex="0" data-export="html">HTML</div>
+    <div class="export-item" role="button" tabindex="0" data-export="react">React</div>
+    <div class="export-item" role="button" tabindex="0" data-export="json">JSON</div>
   </div>
 
   <!-- 停靠区：4 个分类面板，未展开时都待在这里，从不重建 DOM -->
@@ -630,7 +612,6 @@
 
     let currentMotion = 'wave';
     let currentTheme = 'mist';
-    let previewedOption = null;
     let currentRatioKey = '1:1';
     let currentSize = 256; // 参照边长（长边）：Size 预设 + 拖拽手柄共用同一个值
     let speedMultiplier = 1;
@@ -647,48 +628,17 @@
     const cardEl = document.getElementById('card');
     const glowEl = document.getElementById('glow');
 
-    // Keep interaction available when a CDN fails or a browser declines a GPU
-    // context (for example an embedded portfolio preview). The shim resolves
-    // to the actual GSAP instance in normal use.
-    const fallbackTargets = target => {
-      if (typeof target === 'string') return [...document.querySelectorAll(target)];
-      if (Array.isArray(target)) return target;
-      if (target instanceof NodeList) return [...target];
-      return [target];
-    };
-    const animation = window.gsap || {
-      to(target, vars) {
-        Object.entries(vars).forEach(([key, value]) => {
-          if (!['duration', 'ease', 'stagger', 'overwrite', 'onUpdate', 'onComplete'].includes(key)) target[key] = value;
-        });
-        vars.onUpdate && vars.onUpdate();
-        vars.onComplete && vars.onComplete();
-        return target;
-      },
-      fromTo(target, from, to) {
-        const targets = fallbackTargets(target);
-        targets.forEach(item => Object.assign(item.style || item, from));
-        targets.forEach(item => this.to(item.style || item, to));
-        return target;
-      },
-      killTweensOf() {},
-      timeline() {
-        return {
-          fromTo(target, from, to) {
-            animation.fromTo(target, from, to);
-            return this;
-          }
-        };
-      }
-    };
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: true // 允许 canvas.toBlob() 导出静态帧
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    let renderer = null;
-    let scene = null;
-    let camera = null;
-    let clock = null;
-    let rafId = null;
-    let webglReady = false;
-    const fallbackColor = hex => ({ getHexString: () => hex.replace('#', '') });
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
     const vertexShader = `
       varying vec2 vUv;
@@ -799,66 +749,27 @@
       }
     `;
 
-    let uniforms = {
+    const uniforms = {
       uTime: { value: 0 },
       uWarp: { value: MOTIONS.wave.warp },
       uFold: { value: MOTIONS.wave.fold },
       uAmp:  { value: MOTIONS.wave.amp },
-      uLightShift: { value: { x: 0, y: 0 } },
+      uLightShift: { value: new THREE.Vector2(0, 0) },
       uSpeed: { value: MOTIONS.wave.speed },
-      uColorShadow: { value: fallbackColor(PALETTES.mist.shadow) },
-      uColorMid:    { value: fallbackColor(PALETTES.mist.mid) },
-      uColorLight:  { value: fallbackColor(PALETTES.mist.light) },
-      uColorPeak:   { value: fallbackColor(PALETTES.mist.peak) }
+      uColorShadow: { value: new THREE.Color(PALETTES.mist.shadow) },
+      uColorMid:    { value: new THREE.Color(PALETTES.mist.mid) },
+      uColorLight:  { value: new THREE.Color(PALETTES.mist.light) },
+      uColorPeak:   { value: new THREE.Color(PALETTES.mist.peak) }
     };
 
-    if (window.THREE) {
-      try {
-        renderer = new THREE.WebGLRenderer({
-          canvas,
-          antialias: true,
-          alpha: true,
-          powerPreference: "high-performance",
-          preserveDrawingBuffer: true // 允许 canvas.toBlob() 导出静态帧
-        });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        scene = new THREE.Scene();
-        camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        uniforms = {
-          uTime: { value: 0 },
-          uWarp: { value: MOTIONS.wave.warp },
-          uFold: { value: MOTIONS.wave.fold },
-          uAmp:  { value: MOTIONS.wave.amp },
-          uLightShift: { value: new THREE.Vector2(0, 0) },
-          uSpeed: { value: MOTIONS.wave.speed },
-          uColorShadow: { value: new THREE.Color(PALETTES.mist.shadow) },
-          uColorMid:    { value: new THREE.Color(PALETTES.mist.mid) },
-          uColorLight:  { value: new THREE.Color(PALETTES.mist.light) },
-          uColorPeak:   { value: new THREE.Color(PALETTES.mist.peak) }
-        };
-        const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
-        scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
-        clock = new THREE.Clock();
-        webglReady = true;
-      } catch (error) {
-        console.warn('Flluid is using its CSS material fallback.', error);
-        cardEl.classList.add('fallback-fluid');
-      }
-    } else {
-      cardEl.classList.add('fallback-fluid');
-    }
+    const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
 
     // 动画主循环
+    const clock = new THREE.Clock();
+    let rafId = null;
 
     function animate() {
-      if (!webglReady) return;
-      // A still first frame honors reduced-motion without removing the user's
-      // ability to change colour or export the card.
-      if (reduced) {
-        renderer.render(scene, camera);
-        renderPaths();
-        return;
-      }
       rafId = requestAnimationFrame(animate);
       uniforms.uTime.value += clock.getDelta() * uniforms.uSpeed.value;
       renderer.render(scene, camera);
@@ -869,13 +780,12 @@
       if (document.hidden) {
         cancelAnimationFrame(rafId);
         rafId = null;
-      } else if (webglReady && !rafId && !reduced) {
+      } else if (!rafId) {
         animate();
       }
     });
 
     function resizeRenderer() {
-      if (!renderer) return;
       const rect = cardEl.getBoundingClientRect();
       renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
     }
@@ -910,6 +820,7 @@
       }
     }
     window.addEventListener('resize', fitThemeScroll);
+    window.addEventListener('resize', () => applyDimensions());
 
     function sideAnchor(slotEl) {
       const activeOpt = slotEl.querySelector('.option.active');
@@ -964,11 +875,11 @@
 
     function showConnectorSide(side) {
       const els = side === 'left' ? [leftPath, dotTextL, dotCardL] : [rightPath, dotCardR, dotTextR];
-      animation.to(els, { opacity: 1, duration: 0.4 * D, ease: "power2.out", overwrite: "auto" });
+      gsap.to(els, { opacity: 1, duration: 0.4 * D, ease: "power2.out", overwrite: "auto" });
     }
     function hideConnectorSide(side) {
       const els = side === 'left' ? [leftPath, dotTextL, dotCardL] : [rightPath, dotCardR, dotTextR];
-      animation.to(els, { opacity: 0, duration: 0.3 * D, ease: "power2.in", overwrite: "auto" });
+      gsap.to(els, { opacity: 0, duration: 0.3 * D, ease: "power2.in", overwrite: "auto" });
     }
 
     // =======================================================
@@ -980,67 +891,28 @@
     const shadowTint = hexToRgb255(PALETTES.mist.shadow); // 与 CSS 默认值 --shadow-tint 对齐
 
     // 四阶色彩过渡（Mist/Ocean/Abyss/莫兰迪色板/自定义取色 共用）+ 阴影同步染色
-    function tweenToPalette(target, multiplier = 1) {
-      if (!webglReady) {
-        cardEl.style.background = `radial-gradient(120% 95% at 82% 8%, ${target.peak}, transparent 47%), radial-gradient(95% 110% at 8% 94%, ${target.shadow}, transparent 54%), linear-gradient(142deg, ${target.mid} 0%, ${target.light} 45%, ${target.shadow} 100%)`;
-        glowEl.style.backgroundColor = target.glow;
-        cardEl.style.setProperty('--shadow-tint', Object.values(hexToRgb255(target.shadow)).map(value => value | 0).join(', '));
-        return;
-      }
+    function tweenToPalette(target) {
       const shadow = new THREE.Color(target.shadow);
       const mid = new THREE.Color(target.mid);
       const light = new THREE.Color(target.light);
       const peak = new THREE.Color(target.peak);
 
       const ease = "power2.out";
-      const dur = 0.95 * multiplier * D;
-      animation.to(uniforms.uColorShadow.value, { r: shadow.r, g: shadow.g, b: shadow.b, duration: dur, ease, overwrite: "auto" });
-      animation.to(uniforms.uColorMid.value,    { r: mid.r,    g: mid.g,    b: mid.b,    duration: dur, ease, overwrite: "auto" });
-      animation.to(uniforms.uColorLight.value,  { r: light.r,  g: light.g,  b: light.b,  duration: dur, ease, overwrite: "auto" });
-      animation.to(uniforms.uColorPeak.value,   { r: peak.r,   g: peak.g,   b: peak.b,   duration: dur, ease, overwrite: "auto" });
+      const dur = 0.95 * D;
+      gsap.to(uniforms.uColorShadow.value, { r: shadow.r, g: shadow.g, b: shadow.b, duration: dur, ease, overwrite: "auto" });
+      gsap.to(uniforms.uColorMid.value,    { r: mid.r,    g: mid.g,    b: mid.b,    duration: dur, ease, overwrite: "auto" });
+      gsap.to(uniforms.uColorLight.value,  { r: light.r,  g: light.g,  b: light.b,  duration: dur, ease, overwrite: "auto" });
+      gsap.to(uniforms.uColorPeak.value,   { r: peak.r,   g: peak.g,   b: peak.b,   duration: dur, ease, overwrite: "auto" });
 
-      animation.to(glowEl, { backgroundColor: target.glow, duration: dur, ease, overwrite: "auto" });
-      animation.fromTo(glowEl, { opacity: 0.68 }, { opacity: 0.5, duration: 1.3 * multiplier * D, ease: "power2.out", overwrite: "auto" });
+      gsap.to(glowEl, { backgroundColor: target.glow, duration: dur, ease, overwrite: "auto" });
+      gsap.fromTo(glowEl, { opacity: 0.68 }, { opacity: 0.5, duration: 1.3 * D, ease: "power2.out", overwrite: "auto" });
 
       // 卡片阴影跟随主题色（用同色系深色，而非固定灰黑）
       const tint = hexToRgb255(target.shadow);
-      animation.to(shadowTint, {
+      gsap.to(shadowTint, {
         r: tint.r, g: tint.g, b: tint.b, duration: dur, ease, overwrite: "auto",
         onUpdate: () => cardEl.style.setProperty('--shadow-tint', `${shadowTint.r | 0}, ${shadowTint.g | 0}, ${shadowTint.b | 0}`)
       });
-    }
-
-    // Hover is a reversible look-ahead. It never changes the active option or
-    // the document state; click / Enter / Space remains the commit gesture.
-    function previewOption(el) {
-      if (reduced || el.classList.contains('active')) return;
-      const { type, val } = el.dataset;
-      if (type === 'motion') {
-        const target = MOTIONS[val];
-        if (!target) return;
-        animation.to(uniforms.uWarp, { value: target.warp, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-        animation.to(uniforms.uFold, { value: target.fold, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-        animation.to(uniforms.uAmp, { value: target.amp, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-      } else if (type === 'theme' && PALETTES[val]) {
-        tweenToPalette(PALETTES[val], 0.28);
-      } else {
-        return;
-      }
-      previewedOption = el;
-    }
-
-    function clearPreview(el) {
-      if (previewedOption !== el) return;
-      const { type } = el.dataset;
-      if (type === 'motion') {
-        const target = MOTIONS[currentMotion];
-        animation.to(uniforms.uWarp, { value: target.warp, duration: 0.25 * D, ease: "power2.out", overwrite: "auto" });
-        animation.to(uniforms.uFold, { value: target.fold, duration: 0.25 * D, ease: "power2.out", overwrite: "auto" });
-        animation.to(uniforms.uAmp, { value: target.amp, duration: 0.25 * D, ease: "power2.out", overwrite: "auto" });
-      } else if (type === 'theme') {
-        tweenToPalette(PALETTES[currentTheme], 0.28);
-      }
-      previewedOption = null;
     }
 
     function selectOption(el) {
@@ -1053,22 +925,18 @@
       if (type === 'ratio' && val === currentRatioKey) return;
       if (type === 'size' && +val === currentSize) return;
 
-      el.parentElement.querySelectorAll('.option').forEach(opt => {
-        opt.classList.remove('active');
-        opt.setAttribute('aria-pressed', 'false');
-      });
+      el.parentElement.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
       el.classList.add('active');
-      el.setAttribute('aria-pressed', 'true');
 
       const mountedSide = el.closest('#slotLeft') ? 'left' : (el.closest('#slotRight') ? 'right' : null);
 
       if (type === 'motion') {
         currentMotion = val;
         const target = MOTIONS[val];
-        animation.to(uniforms.uWarp, { value: target.warp, duration: 1.1 * D, ease: "power2.out", overwrite: "auto" });
-        animation.to(uniforms.uFold, { value: target.fold, duration: 1.1 * D, ease: "power2.out", overwrite: "auto" });
-        animation.to(uniforms.uAmp,  { value: target.amp,  duration: 1.2 * D, ease: "back.out(1.5)", overwrite: "auto" });
-        animation.to(uniforms.uSpeed, { value: target.speed * speedMultiplier, duration: 0.9 * D, ease: "power2.out", overwrite: "auto" });
+        gsap.to(uniforms.uWarp, { value: target.warp, duration: 1.1 * D, ease: "power2.out", overwrite: "auto" });
+        gsap.to(uniforms.uFold, { value: target.fold, duration: 1.1 * D, ease: "power2.out", overwrite: "auto" });
+        gsap.to(uniforms.uAmp,  { value: target.amp,  duration: 1.2 * D, ease: "back.out(1.5)", overwrite: "auto" });
+        gsap.to(uniforms.uSpeed, { value: target.speed * speedMultiplier, duration: 0.9 * D, ease: "power2.out", overwrite: "auto" });
 
       } else if (type === 'theme') {
         currentTheme = val;
@@ -1076,7 +944,7 @@
 
       } else if (type === 'speed') {
         speedMultiplier = +val;
-        animation.to(uniforms.uSpeed, { value: MOTIONS[currentMotion].speed * speedMultiplier, duration: 0.6 * D, ease: "power2.out", overwrite: "auto" });
+        gsap.to(uniforms.uSpeed, { value: MOTIONS[currentMotion].speed * speedMultiplier, duration: 0.6 * D, ease: "power2.out", overwrite: "auto" });
 
       } else if (type === 'ratio') {
         currentRatioKey = val;
@@ -1092,15 +960,13 @@
         const anchor = mountedSide === 'left' ? anchors.textL : anchors.textR;
         if (anchor) {
           const key = mountedSide === 'left' ? 'leftY' : 'rightY';
-          animation.to(lineState, { [key]: anchor.y, duration: 0.55 * D, ease: "power2.out", overwrite: "auto" });
+          gsap.to(lineState, { [key]: anchor.y, duration: 0.55 * D, ease: "power2.out", overwrite: "auto" });
         }
       }
     }
 
-
     // 普通色板/动效选项走点击 + 键盘；取色器行单独处理（避免与 selectOption 冲突）
     document.querySelectorAll('.option:not(.option-picker)').forEach(el => {
-      el.setAttribute('aria-pressed', String(el.classList.contains('active')));
       el.addEventListener('click', () => selectOption(el));
       el.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -1108,10 +974,6 @@
           selectOption(el);
         }
       });
-      if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        el.addEventListener('pointerenter', () => previewOption(el));
-        el.addEventListener('pointerleave', () => clearPreview(el));
-      }
     });
 
     window.addEventListener('resize', () => {
@@ -1127,7 +989,7 @@
         const r = cardEl.getBoundingClientRect();
         const nx = (e.clientX - r.left) / r.width - 0.5;
         const ny = (e.clientY - r.top) / r.height - 0.5;
-        animation.to(uniforms.uLightShift.value, { x: nx * 2, y: ny * 1.6, duration: 1.2, ease: "power3.out", overwrite: "auto" });
+        gsap.to(uniforms.uLightShift.value, { x: nx * 2, y: ny * 1.6, duration: 1.2, ease: "power3.out", overwrite: "auto" });
       });
     }
 
@@ -1149,10 +1011,7 @@
         return;
       }
 
-      themeScroll.querySelectorAll('.option').forEach(opt => {
-        opt.classList.remove('active');
-        opt.setAttribute('aria-pressed', 'false');
-      });
+      themeScroll.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
       colorPickerRow.classList.add('active');
       currentTheme = 'custom';
 
@@ -1162,7 +1021,7 @@
         const anchor = mountedSide === 'left' ? anchors.textL : anchors.textR;
         if (anchor) {
           const key = mountedSide === 'left' ? 'leftY' : 'rightY';
-        animation.to(lineState, { [key]: anchor.y, duration: 0.55 * D, ease: "power2.out", overwrite: "auto" });
+          gsap.to(lineState, { [key]: anchor.y, duration: 0.55 * D, ease: "power2.out", overwrite: "auto" });
         }
       }
       tweenToPalette(customRamp);
@@ -1187,15 +1046,14 @@
     const categoryParking = document.getElementById('categoryPanels');
 
     function parkPanelImmediate(el) {
-      animation.killTweensOf(el.querySelectorAll('.col-label, .option'));
+      gsap.killTweensOf(el.querySelectorAll('.col-label, .option'));
       categoryParking.appendChild(el);
     }
 
     function updateNavActiveStates() {
       document.querySelectorAll('.category-item').forEach(el => {
-        const active = slots.left === el.dataset.cat || slots.right === el.dataset.cat;
-        el.classList.toggle('active', active);
-        el.setAttribute('aria-expanded', String(active));
+        const expanded = slots.left === el.dataset.cat || slots.right === el.dataset.cat;
+        el.classList.toggle('active', expanded);el.setAttribute('aria-expanded', String(expanded));
       });
     }
 
@@ -1219,14 +1077,8 @@
       if (catKey === 'style') fitThemeScroll();
 
       const kids = panels[catKey].querySelectorAll('.col-label, .option');
-      animation.killTweensOf(kids);
-      // Direct controls need to be available in the first rendered frame.
-      // The artwork itself carries the liquid motion; delaying its controls
-      // adds friction without making the transition clearer.
-      kids.forEach(item => {
-        item.style.opacity = '1';
-        item.style.transform = 'none';
-      });
+      gsap.killTweensOf(kids);
+      gsap.fromTo(kids, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4 * D, stagger: 0.04, ease: "power3.out", overwrite: "auto" });
 
       updateNavActiveStates();
       syncSideAnchor(side);
@@ -1241,28 +1093,40 @@
       hideConnectorSide(side);
       updateNavActiveStates();
 
+      const myGen = ++slotGen[side];
       const kids = panels[catKey].querySelectorAll('.col-label, .option');
-      animation.killTweensOf(kids);
-      kids.forEach(item => { item.style.opacity = '0'; });
-      parkPanelImmediate(panels[catKey]);
+      gsap.killTweensOf(kids);
+      gsap.to(kids, {
+        opacity: 0, y: -8, duration: 0.2 * D, stagger: 0.02, ease: "power2.in", overwrite: "auto",
+        onComplete: () => { if (slotGen[side] === myGen) parkPanelImmediate(panels[catKey]); }
+      });
     }
 
     function toggleCategory(catKey) {
-      // One active task at a time: changing a liquid card should never leave
-      // two unrelated control lists competing for attention.
+      if (slots.left === catKey) { collapseSlot('left'); return; }
       if (slots.right === catKey) { collapseSlot('right'); return; }
-      if (slots.left) collapseSlot('left');
-      if (slots.right) collapseSlot('right');
-      expandInSlot('right', catKey);
+
+      if (slots.left === null) {
+        expandInSlot('left', catKey);
+      } else if (slots.right === null) {
+        expandInSlot('right', catKey);
+      } else {
+        const oldestKey = activationOrder[0];
+        const side = (slots.left === oldestKey) ? 'left' : 'right';
+        collapseSlot(side);
+        expandInSlot(side, catKey);
+      }
     }
 
     document.querySelectorAll('.category-item').forEach(el => {
       el.addEventListener('click', () => toggleCategory(el.dataset.cat));
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleCategory(el.dataset.cat);
+        }
+      });
     });
-
-    // Colour is the first meaningful choice. Motion starts from the balanced
-    // Wave state and remains one click away rather than competing at launch.
-    toggleCategory('style');
 
     // 键盘快捷键：即使对应分类当前收起，也照常更新状态（不强制展开面板）
     window.addEventListener('keydown', e => {
@@ -1287,7 +1151,11 @@
       if (aspect >= 1) { width = refSize; height = refSize / aspect; }
       else { height = refSize; width = refSize * aspect; }
 
-      const maxDim = Math.min(window.innerWidth, window.innerHeight) * (2 / 3);
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const mobile = vw <= 760;
+      const gap = vw > 1100 ? Math.min(140, Math.max(24, (vw - 1056) / 2)) : Math.min(70, Math.max(16, vw * .04));
+      const availableWidth = mobile ? vw - 48 : vw - (vw > 1100 ? 300 : 240) - gap * 2 - (vw > 1100 ? 240 : 48);
+      const maxDim = Math.max(120, Math.min(Math.min(vw, vh) * (2 / 3), availableWidth));
       const scale = Math.min(1, maxDim / Math.max(width, height));
       return { width: width * scale, height: height * scale };
     }
@@ -1300,7 +1168,7 @@
       const radius = radiusFor(dims);
       glowEl.style.inset = -Math.max(30, Math.min(dims.width, dims.height) * 0.23) + 'px';
 
-      animation.to(cardEl, {
+      gsap.to(cardEl, {
         width: dims.width,
         height: dims.height,
         borderRadius: radius,
@@ -1328,7 +1196,7 @@
         e.preventDefault();
         e.stopPropagation();
         handle.setPointerCapture(e.pointerId);
-        animation.killTweensOf(cardEl);
+        gsap.killTweensOf(cardEl);
         const rect = cardEl.getBoundingClientRect();
         dragState = {
           handle,
@@ -1558,17 +1426,23 @@ export function FluidShaderCard({ width = ${state.width}, height = ${state.heigh
         }
       };
       el.addEventListener('click', trigger);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          trigger();
+        }
+      });
     });
 
-    // Keep the first frame immediately usable. The fluid surface already has
-    // continuous motion; hiding the controls behind an entrance animation
-    // makes a fast colour/export workflow feel slower and harms offline views.
-    glowEl.style.opacity = '0.5';
-    cardEl.style.opacity = '1';
-    document.getElementById('categoryPanel').style.opacity = '1';
-    document.getElementById('exportPanel').style.opacity = '1';
+    // 克制的入场序列：连线的显隐已交给 showConnectorSide/hideConnectorSide，
+    // 分类面板全部收起，这里只淡入卡片本体与左右上角两个导航
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.fromTo(glowEl, { opacity: 0 }, { opacity: 0.5, duration: 1.1 * D })
+      .fromTo(cardEl, { opacity: 0, scale: 0.95, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.85 * D }, '-=0.6')
+      .fromTo(['#categoryPanel', '#exportPanel'], { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.6 * D }, '-=0.5');
 
-    if (webglReady) animate();
+    applyDimensions();
+    animate();
   </script>
 </body>
 </html>
