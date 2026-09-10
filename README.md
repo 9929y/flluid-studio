@@ -33,11 +33,6 @@ The prototype is strongest as evidence for:
 - Motion transitions use GSAP from a CDN.
 - The shader is clipped inside a rounded card and layered with glow, inner highlight, and inner shadow treatments.
 
+## Licence
 
-## Recommended Repo Description
-
-Single-file WebGL fluid-shader card prototype with motion/theme controls, animated connectors, and accessible interaction states.
-
-## Suggested Topics
-
-`webgl`, `threejs`, `shader`, `creative-coding`, `interaction-design`, `prototype`, `design-engineering`
+MIT — see [LICENSE](LICENSE).
