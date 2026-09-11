@@ -176,13 +176,17 @@
       display: block;
     }
 
-    /* 四角拖拽手柄：贴着卡片圆角外侧的一道弧线，悬停/拖拽时才显形，四角都能拉 */
+    /* 四角拖拽手柄：与卡片圆角严格同心的一道弧线。
+       盒子是正方形，边长 = 圆角半径 = 卡片当前圆角 + gap（--card-r 由 JS 实时写入），
+       于是弧心正好落在盒子的对角，与卡片圆角的圆心重合 ——
+       尺寸 / 比例 / 拖拽 / 视口变化时弧线始终与卡片圆角平行，间距恒为 gap。 */
     .resize-handle {
+      --gap: 10px;
+      --arc: calc(var(--card-r, 46px) + var(--gap));
       position: absolute;
-      width: 26px;
-      height: 26px;
+      width: var(--arc);
+      height: var(--arc);
       border: 2px solid transparent;
-      border-radius: 13px;
       opacity: 0;
       transition: opacity 0.25s ease, transform 0.2s ease;
       z-index: 2;
@@ -191,35 +195,37 @@
     .card-zone:hover .resize-handle,
     .resize-handle:focus-visible,
     .resize-handle.dragging { opacity: 1; }
+    /* 放大用 transform，缩放原点设在弧心（盒子的对角）：半径变大而圆心不动，
+       所以悬停态依然与卡片圆角同心。用 transform 也不会和每帧变化的圆角抢布局。 */
     .resize-handle:hover, .resize-handle.dragging { transform: scale(1.12); }
 
     .resize-handle[data-corner="tl"] {
-      left: -11px; top: -11px;
+      left: calc(-1 * var(--gap)); top: calc(-1 * var(--gap));
       border-top-color: #7c8a9c; border-left-color: #7c8a9c;
-      border-top-left-radius: 13px;
+      border-top-left-radius: var(--arc);
       cursor: nwse-resize;
-      transform-origin: top left;
+      transform-origin: bottom right;
     }
     .resize-handle[data-corner="tr"] {
-      right: -11px; top: -11px;
+      right: calc(-1 * var(--gap)); top: calc(-1 * var(--gap));
       border-top-color: #7c8a9c; border-right-color: #7c8a9c;
-      border-top-right-radius: 13px;
-      cursor: nesw-resize;
-      transform-origin: top right;
-    }
-    .resize-handle[data-corner="bl"] {
-      left: -11px; bottom: -11px;
-      border-bottom-color: #7c8a9c; border-left-color: #7c8a9c;
-      border-bottom-left-radius: 13px;
+      border-top-right-radius: var(--arc);
       cursor: nesw-resize;
       transform-origin: bottom left;
     }
+    .resize-handle[data-corner="bl"] {
+      left: calc(-1 * var(--gap)); bottom: calc(-1 * var(--gap));
+      border-bottom-color: #7c8a9c; border-left-color: #7c8a9c;
+      border-bottom-left-radius: var(--arc);
+      cursor: nesw-resize;
+      transform-origin: top right;
+    }
     .resize-handle[data-corner="br"] {
-      right: -11px; bottom: -11px;
+      right: calc(-1 * var(--gap)); bottom: calc(-1 * var(--gap));
       border-bottom-color: #7c8a9c; border-right-color: #7c8a9c;
-      border-bottom-right-radius: 13px;
+      border-bottom-right-radius: var(--arc);
       cursor: nwse-resize;
-      transform-origin: bottom right;
+      transform-origin: top left;
     }
 
     #connector-svg {
@@ -790,7 +796,17 @@
       renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
     }
     resizeRenderer();
-    new ResizeObserver(resizeRenderer).observe(cardEl);
+
+    // 把卡片此刻的实际圆角写进 --card-r，四角手柄的弧线据此保持同心。
+    // 读 computed style 而不是复算，gsap 补间中间帧也能跟上。
+    const cardZoneEl = document.querySelector('.card-zone');
+    function syncHandleRadius() {
+      const r = parseFloat(getComputedStyle(cardEl).borderTopLeftRadius) || 0;
+      cardZoneEl.style.setProperty('--card-r', r + 'px');
+    }
+    syncHandleRadius();
+
+    new ResizeObserver(() => { resizeRenderer(); syncHandleRadius(); }).observe(cardEl);
 
     // =======================================================
     // 4. SVG 动态弹性贝塞尔曲线 — 槽位感知、空槽安全
@@ -1174,7 +1190,7 @@
         borderRadius: radius,
         duration: 0.6 * D,
         ease: "power3.inOut",
-        onUpdate: () => { resizeRenderer(); renderPaths(); },
+        onUpdate: () => { resizeRenderer(); syncHandleRadius(); renderPaths(); },
         onComplete: fitThemeScroll
       });
     }
@@ -1220,6 +1236,7 @@
         cardEl.style.height = dims.height + 'px';
         cardEl.style.borderRadius = radius + 'px';
         glowEl.style.inset = -Math.max(30, Math.min(dims.width, dims.height) * 0.23) + 'px';
+        syncHandleRadius();
         resizeRenderer();
         renderPaths();
       });
